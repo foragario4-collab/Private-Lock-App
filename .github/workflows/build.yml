@@ -4,6 +4,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,10 +25,25 @@ jobs:
       - name: APK bauen
         run: gradle assembleDebug --no-daemon
 
+      - name: Version auslesen
+        id: version
+        run: echo "name=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)" >> "$GITHUB_OUTPUT"
+
       - name: APK umbenennen
-        run: cp app/build/outputs/apk/debug/app-debug.apk PrivateLock.apk
+        run: cp app/build/outputs/apk/debug/app-debug.apk "PrivateLock-${{ steps.version.outputs.name }}.apk"
 
       - uses: actions/upload-artifact@v4
         with:
           name: PrivateLock-APK
-          path: PrivateLock.apk
+          path: PrivateLock-*.apk
+
+      - name: Release erstellen
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.name }}-${{ github.run_number }}
+          name: Private Lock ${{ steps.version.outputs.name }} (Build ${{ github.run_number }})
+          body: |
+            Neue Version von Private Lock.
+            Herunterladen: unten bei „Assets“ auf die .apk tippen und installieren.
+          files: PrivateLock-*.apk
+          make_latest: true
