@@ -75,7 +75,7 @@ class Detector(private val onTrigger: (Reason) -> Unit) {
         }
 
         if (lin >= threshold) {
-            val ok = if (!smart) true else samples.count { it.v >= threshold * 0.55f } >= 3
+            val ok = if (!smart) true else samples.count { it.v >= threshold * 0.6f } >= 4
             if (ok) fire(Reason.GRAB, tMs)
         }
     }
@@ -93,11 +93,15 @@ class Detector(private val onTrigger: (Reason) -> Unit) {
         private const val FALL_MS = 120L
 
         /** Obergrenze der Live-Anzeige */
-        const val SCALE_MAX = 25f
+        const val SCALE_MAX = 35f
 
-        /** Empfindlichkeit 1 (wenig) … 10 (sehr empfindlich) -> Schwelle in m/s² */
+        /**
+         * Empfindlichkeit 1 (wenig) … 10 (sehr empfindlich) -> Schwelle in m/s².
+         * Gröber eingestellt: braucht einen deutlich stärkeren Ruck als vorher
+         * (Stufe 1 ≈ 28, Stufe 6 ≈ 17, Stufe 10 ≈ 8 m/s²).
+         */
         fun threshold(sens: Int, mode: String): Float {
-            val base = 24f - sens.coerceIn(1, 10) * 2f
+            val base = 30f - sens.coerceIn(1, 10) * 2.2f
             val factor = when (mode) {
                 Prefs.MODE_DRIVE -> 1.7f
                 Prefs.MODE_BAG -> 1.5f
