@@ -119,6 +119,7 @@ class LockService : Service(), SensorEventListener {
     // ---------------------------------------------------------------- Einstellungen
 
     private fun applyPrefs() {
+        createChannels(this) // Kanal-Namen in der aktuellen Sprache
         detector.threshold = Prefs.threshold(this)
         detector.smart = Prefs.on(this, Flag.SMART)
         detector.fall = Prefs.on(this, Flag.FALL)
@@ -197,16 +198,17 @@ class LockService : Service(), SensorEventListener {
     }
 
     private fun doLock(reason: Detector.Reason) {
+        val s = L.of(this)
         if (!Admin.lockNow(this)) {
-            notifyEvent("Sperren nicht möglich", "Die Sperr-Berechtigung fehlt – tippe hier, um sie zu erlauben")
+            notifyEvent(s.lockFailTitle, s.lockFailText)
             return
         }
         if (Prefs.on(this, Flag.VIBRATE)) Feedback.vibrate(this, 220)
         if (Prefs.on(this, Flag.ALARM) && reason == Detector.Reason.GRAB) startAlarm()
         if (Prefs.on(this, Flag.NOTIFY)) {
-            val time = SimpleDateFormat("HH:mm", Locale.GERMAN).format(Date())
-            val what = if (reason == Detector.Reason.FALL) "Sturz erkannt" else "Bewegung erkannt"
-            notifyEvent("Handy gesperrt", "$what um $time")
+            val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+            val text = if (reason == Detector.Reason.FALL) s.lockedFall else s.lockedGrab
+            notifyEvent(s.lockedTitle, String.format(text, time))
         }
         updateListening()
     }
@@ -276,19 +278,20 @@ class LockService : Service(), SensorEventListener {
     )
 
     private fun buildStatus(): Notification {
+        val s = L.of(this)
         val mode = Prefs.effectiveMode(this)
-        val modeText = if (Prefs.drivingByCar(this)) "Fahrmodus (Auto verbunden)" else Prefs.modeName(mode)
+        val modeText = if (Prefs.drivingByCar(this)) s.modeDriveCar else Prefs.modeName(this, mode)
         val stop = PendingIntent.getService(
             this, 1, Intent(this, LockService::class.java).setAction(ACTION_STOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         return Notification.Builder(this, CH_STATUS)
             .setSmallIcon(R.drawable.ic_stat_lock)
-            .setContentTitle("Private Lock aktiv")
-            .setContentText("Überwacht Bewegung · $modeText")
+            .setContentTitle(s.notifActiveTitle)
+            .setContentText(String.format(s.notifActiveText, modeText))
             .setOngoing(true)
             .setContentIntent(openAppIntent())
-            .addAction(Notification.Action.Builder(null as android.graphics.drawable.Icon?, "Ausschalten", stop).build())
+            .addAction(Notification.Action.Builder(null as android.graphics.drawable.Icon?, s.turnOff, stop).build())
             .build()
     }
 
@@ -346,16 +349,17 @@ class LockService : Service(), SensorEventListener {
         }
 
         fun createChannels(ctx: Context) {
+            val s = L.of(ctx)
             val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             nm.createNotificationChannel(
-                NotificationChannel(CH_STATUS, "Schutz aktiv", NotificationManager.IMPORTANCE_LOW).apply {
-                    description = "Dauerhafte Anzeige, solange Private Lock aktiv ist"
+                NotificationChannel(CH_STATUS, s.chStatus, NotificationManager.IMPORTANCE_LOW).apply {
+                    description = s.chStatusDesc
                     setShowBadge(false)
                 }
             )
             nm.createNotificationChannel(
-                NotificationChannel(CH_EVENTS, "Sperr-Meldungen", NotificationManager.IMPORTANCE_DEFAULT).apply {
-                    description = "Meldet, wann das Handy gesperrt wurde"
+                NotificationChannel(CH_EVENTS, s.chEvents, NotificationManager.IMPORTANCE_DEFAULT).apply {
+                    description = s.chEventsDesc
                 }
             )
         }

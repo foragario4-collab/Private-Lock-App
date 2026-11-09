@@ -49,11 +49,12 @@ class OrbView(ctx: Context) : View(ctx) {
     }
     private val lockClosed: Drawable? = ctx.getDrawable(R.drawable.ic_lock_big)?.mutate()
     private val lockOpen: Drawable? = ctx.getDrawable(R.drawable.ic_lock_open_big)?.mutate()
+    private val s = L.of(ctx)
 
     init {
         isClickable = true
         isFocusable = true
-        contentDescription = "Schutz ein- oder ausschalten"
+        contentDescription = s.orbDesc
         setOnClickListener { onToggle?.invoke() }
         Glass.pressEffect(this, 0.94f)
     }
@@ -132,8 +133,8 @@ class OrbView(ctx: Context) : View(ctx) {
         val top = (cy - context.dp(58)).toInt()
         icon?.setBounds((cx - s / 2).toInt(), top, (cx + s / 2).toInt(), top + s)
         icon?.draw(c)
-        c.drawText(if (isOn) "Aktiv" else "Inaktiv", cx, cy + context.dp(30), labelPaint)
-        c.drawText(if (isOn) "Tippen zum Ausschalten" else "Tippen zum Einschalten", cx, cy + context.dp(54), hintPaint)
+        c.drawText(if (isOn) s.orbOn else s.orbOff, cx, cy + context.dp(30), labelPaint)
+        c.drawText(if (isOn) s.orbHintOn else s.orbHintOff, cx, cy + context.dp(54), hintPaint)
     }
 }
 

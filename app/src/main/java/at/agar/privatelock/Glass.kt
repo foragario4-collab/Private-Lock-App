@@ -271,7 +271,7 @@ class GlassSwitch(ctx: Context) : View(ctx) {
         val h = height.toFloat()
         val p = pos.coerceIn(0f, 1f)
         r.set(0f, 0f, w, h)
-        trackPaint.color = evaluator.evaluate(p, offColor, Glass.ACCENT) as Int
+        trackPaint.color = evaluator.evaluate(p, offColor, Glass.ACCENT) as Int // Farbe nach Zustand
         c.drawRoundRect(r, h / 2, h / 2, trackPaint)
         val half = rimPaint.strokeWidth / 2
         r.set(half, half, w - half, h - half)
@@ -282,7 +282,8 @@ class GlassSwitch(ctx: Context) : View(ctx) {
         val kw = kh + stretch * context.dp(7)
         val minX = inset
         val maxX = w - inset - kw
-        val x = (minX + (maxX - minX) * pos).coerceIn(inset / 2, w - inset / 2 - kw)
+        val dir = if (layoutDirection == View.LAYOUT_DIRECTION_RTL) 1f - pos else pos
+        val x = (minX + (maxX - minX) * dir).coerceIn(inset / 2, w - inset / 2 - kw)
         val drop = context.dp(1).toFloat() * 1.5f
         r.set(x, inset + drop, x + kw, inset + kh + drop)
         c.drawRoundRect(r, kh / 2, kh / 2, shadowPaint)
@@ -336,7 +337,7 @@ class GlassSegmented(
                 gravity = Gravity.CENTER
                 maxLines = 1
                 ellipsize = TextUtils.TruncateAt.END
-                setPadding(ctx.dp(6), ctx.dp(11), ctx.dp(6), ctx.dp(11))
+                setPaddingRelative(ctx.dp(6), ctx.dp(11), ctx.dp(6), ctx.dp(11))
                 alpha = if (i == initial) 1f else 0.65f
                 isClickable = true
                 setOnClickListener { select(i) }
@@ -374,8 +375,9 @@ class GlassSegmented(
             val seg = (width - paddingLeft - paddingRight).toFloat() / n
             val sx = stretch * context.dp(6)
             val sy = stretch * context.dp(2)
-            val left = paddingLeft + seg * pos - sx
-            val right = paddingLeft + seg * (pos + 1) + sx
+            val p = if (layoutDirection == View.LAYOUT_DIRECTION_RTL) (n - 1) - pos else pos
+            val left = paddingLeft + seg * p - sx
+            val right = paddingLeft + seg * (p + 1) + sx
             thumb.setBounds(left.toInt(), (paddingTop - sy).toInt(), right.toInt(), (height - paddingBottom + sy).toInt())
             thumb.draw(c)
         }

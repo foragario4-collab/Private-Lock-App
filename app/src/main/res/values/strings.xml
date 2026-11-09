@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Private Lock</string>
-    <string name="admin_desc">Erlaubt Private Lock, das Handy bei plötzlicher Bewegung sofort zu sperren.</string>
+    <string name="admin_desc">Damit Private Lock dein Handy bei plötzlicher Bewegung sofort sperren kann.</string>
 </resources>

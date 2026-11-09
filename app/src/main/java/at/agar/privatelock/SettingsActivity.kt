@@ -2,6 +2,7 @@ package at.agar.privatelock
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -19,9 +20,11 @@ class SettingsActivity : Activity() {
     private lateinit var frame: FrameLayout
     private lateinit var permCard: LinearLayout
     private var autoDriveRow: Ui.SwitchRow? = null
+    private lateinit var t: Strings
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        t = L.of(this)
         Ui.edgeToEdge(this)
         val s = Ui.screen(this)
         frame = s.frame
@@ -30,41 +33,46 @@ class SettingsActivity : Activity() {
         root.addView(Ui.backButton(this) { finish() }, LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
         ))
-        root.addView(Glass.label(this, "Einstellungen", 32f, Glass.TEXT, bold = true).apply {
+        root.addView(Glass.label(this, t.settings, 32f, Glass.TEXT, bold = true).apply {
             letterSpacing = -0.02f
         }, Ui.lp(dp(14)))
 
+        // Sprache
+        root.addView(Ui.section(this, t.secLanguage), Ui.lp(dp(26)))
+        val langCard = Ui.card(this, 2)
+        langCard.addView(Ui.navRow(this, t.languageTitle, null, currentLangName()) { chooseLanguage() })
+        root.addView(langCard, Ui.lp(dp(8)))
+
         // Erkennung
-        root.addView(Ui.section(this, "Erkennung"), Ui.lp(dp(26)))
+        root.addView(Ui.section(this, t.secDetection), Ui.lp(dp(26)))
         val detect = Ui.card(this, 2)
-        detect.addView(flagRow(Flag.SMART, "Intelligente Erkennung", "Unterscheidet Wegreißen von normalem Hinlegen").view)
+        detect.addView(flagRow(Flag.SMART, t.smartTitle, t.smartSub).view)
         detect.addView(Ui.separator(this))
-        detect.addView(flagRow(Flag.FALL, "Fallerkennung", "Sperrt, wenn das Handy herunterfällt").view)
+        detect.addView(flagRow(Flag.FALL, t.fallTitle, t.fallSub).view)
         detect.addView(Ui.separator(this))
         detect.addView(Ui.segmentRow(
-            this, "Auslöseverzögerung", "Wie schnell nach dem Ruck gesperrt wird",
-            listOf("Sofort", "0,3 s", "0,8 s"), Prefs.DELAYS.indexOf(Prefs.delay(this)).coerceAtLeast(0)
+            this, t.delayTitle, t.delaySub,
+            listOf(t.delayNow, t.delayShort, t.delayLong), Prefs.DELAYS.indexOf(Prefs.delay(this)).coerceAtLeast(0)
         ) { i -> Prefs.setDelay(this, Prefs.DELAYS[i]) })
         root.addView(detect, Ui.lp(dp(8)))
 
         // Beim Sperren
-        root.addView(Ui.section(this, "Beim Sperren"), Ui.lp(dp(26)))
+        root.addView(Ui.section(this, t.secOnLock), Ui.lp(dp(26)))
         val onLock = Ui.card(this, 2)
-        onLock.addView(flagRow(Flag.VIBRATE, "Vibration", "Kurzes Feedback, wenn gesperrt wird").view)
+        onLock.addView(flagRow(Flag.VIBRATE, t.vibrateTitle, t.vibrateSub).view)
         onLock.addView(Ui.separator(this))
-        onLock.addView(flagRow(Flag.ALARM, "Alarmton", "Lauter Ton, bis du das Handy entsperrst (höchstens 1 Minute)").view)
+        onLock.addView(flagRow(Flag.ALARM, t.alarmTitle, t.alarmSub).view)
         onLock.addView(Ui.separator(this))
-        onLock.addView(flagRow(Flag.NOTIFY, "Benachrichtigung", "Zeigt danach, wann gesperrt wurde").view)
+        onLock.addView(flagRow(Flag.NOTIFY, t.notifyTitle, t.notifySub).view)
         root.addView(onLock, Ui.lp(dp(8)))
 
         // Automatisch
-        root.addView(Ui.section(this, "Automatisch"), Ui.lp(dp(26)))
+        root.addView(Ui.section(this, t.secAuto), Ui.lp(dp(26)))
         val auto = Ui.card(this, 2)
-        auto.addView(flagRow(Flag.BOOT, "Beim Hochfahren starten", "Schutz läuft nach einem Neustart sofort wieder").view)
+        auto.addView(flagRow(Flag.BOOT, t.bootTitle, t.bootSub).view)
         auto.addView(Ui.separator(this))
         val drive = Ui.switchRow(
-            this, "Fahrmodus im Auto",
-            "Schaltet automatisch um, wenn das Handy per Bluetooth mit dem Auto verbunden ist",
+            this, t.driveTitle, t.driveSub,
             Prefs.on(this, Flag.AUTO_DRIVE)
         ) { on ->
             Prefs.set(this, Flag.AUTO_DRIVE, on)
@@ -74,17 +82,16 @@ class SettingsActivity : Activity() {
         auto.addView(drive.view)
         auto.addView(Ui.separator(this))
         auto.addView(flagRow(
-            Flag.SCREEN_OFF, "Auch bei ausgeschaltetem Display",
-            "Bewegung erzwingt sofort die PIN-Eingabe – braucht etwas mehr Akku"
+            Flag.SCREEN_OFF, t.screenOffTitle, t.screenOffSub
         ).view)
         root.addView(auto, Ui.lp(dp(8)))
 
         // Berechtigungen (wird in onResume gefüllt)
-        root.addView(Ui.section(this, "Berechtigungen"), Ui.lp(dp(26)))
+        root.addView(Ui.section(this, t.secPermissions), Ui.lp(dp(26)))
         permCard = Ui.card(this, 2)
         root.addView(permCard, Ui.lp(dp(8)))
 
-        root.addView(Glass.label(this, "Private Lock · Version ${appVersion()}", 12f).apply {
+        root.addView(Glass.label(this, "Private Lock · ${t.version} ${appVersion()}", 12f).apply {
             gravity = Gravity.CENTER
         }, Ui.lp(dp(28)))
 
@@ -105,8 +112,8 @@ class SettingsActivity : Activity() {
         permCard.removeAllViews()
         val admin = Admin.isActive(this)
         permCard.addView(Ui.navRow(
-            this, "Sperr-Berechtigung", "Nötig, damit die App das Handy sperren kann",
-            if (admin) "Erteilt" else "Erlauben", if (admin) Glass.GREEN else Glass.ORANGE,
+            this, t.adminTitle, t.adminSub,
+            if (admin) t.granted else t.allow, if (admin) Glass.GREEN else Glass.ORANGE,
             onClick = if (admin) null else ({ requestAdmin() })
         ))
         permCard.addView(Ui.separator(this))
@@ -114,16 +121,16 @@ class SettingsActivity : Activity() {
         val pm = getSystemService(POWER_SERVICE) as PowerManager
         val ignoring = pm.isIgnoringBatteryOptimizations(packageName)
         permCard.addView(Ui.navRow(
-            this, "Akku-Optimierung", "Auf „Nicht optimieren“ stellen, damit Android den Schutz nicht beendet",
-            if (ignoring) "Aus" else "Ändern", if (ignoring) Glass.GREEN else Glass.ORANGE
+            this, t.batteryTitle, t.batterySub,
+            if (ignoring) t.batteryDone else t.change, if (ignoring) Glass.GREEN else Glass.ORANGE
         ) { openBatterySettings() })
 
         if (Build.VERSION.SDK_INT >= 33) {
             val granted = checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
             permCard.addView(Ui.separator(this))
             permCard.addView(Ui.navRow(
-                this, "Benachrichtigungen", "Für die Anzeige „Schutz aktiv“ und Sperr-Meldungen",
-                if (granted) "Erlaubt" else "Erlauben", if (granted) Glass.GREEN else Glass.ORANGE,
+                this, t.notificationsTitle, t.notificationsSub,
+                if (granted) t.allowed else t.allow, if (granted) Glass.GREEN else Glass.ORANGE,
                 onClick = if (granted) null else ({ openNotificationSettings() })
             ))
         }
@@ -131,14 +138,13 @@ class SettingsActivity : Activity() {
         if (admin) {
             permCard.addView(Ui.separator(this))
             permCard.addView(Ui.navRow(
-                this, "Vor dem Deinstallieren",
-                "Sperr-Berechtigung entziehen – sonst lässt sich die App nicht löschen",
+                this, t.uninstallTitle, t.uninstallSub,
                 null, danger = true
             ) {
                 Prefs.setActive(this, false)
                 LockService.stop(this)
                 Admin.remove(this)
-                Ui.showBanner(frame, "Berechtigung entzogen – du kannst die App jetzt deinstallieren", 3500L)
+                Ui.showBanner(frame, t.adminRemoved, 3500L)
                 frame.postDelayed({ refreshPermissions() }, 500L)
             })
         }
@@ -148,7 +154,7 @@ class SettingsActivity : Activity() {
         try {
             startActivity(Admin.requestIntent(this))
         } catch (_: Exception) {
-            Ui.showBanner(frame, "Die Sperr-Berechtigung konnte nicht geöffnet werden")
+            Ui.showBanner(frame, t.adminOpenFail)
         }
     }
 
@@ -175,6 +181,33 @@ class SettingsActivity : Activity() {
         }
     }
 
+    // ---------------------------------------------------------------- Sprache
+
+    private fun currentLangName(): String {
+        val chosen = Prefs.lang(this)
+        if (chosen == Prefs.LANG_AUTO) return t.languageAuto
+        return L.LANGS.firstOrNull { it.first == chosen }?.second ?: t.languageAuto
+    }
+
+    private fun chooseLanguage() {
+        val codes = listOf(Prefs.LANG_AUTO) + L.LANGS.map { it.first }
+        val names = (listOf(t.languageAuto) + L.LANGS.map { it.second }).toTypedArray()
+        val current = codes.indexOf(Prefs.lang(this)).coerceAtLeast(0)
+        val d = AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+            .setTitle(t.languageTitle)
+            .setSingleChoiceItems(names, current) { dialog, which ->
+                dialog.dismiss()
+                if (codes[which] != Prefs.lang(this)) {
+                    Prefs.setLang(this, codes[which])
+                    recreate()
+                }
+            }
+            .show()
+        d.window?.setBackgroundDrawable(android.graphics.drawable.InsetDrawable(
+            LiquidGlassDrawable(dp(28).toFloat(), 0xF2141A2A.toInt(), dp(1).toFloat() * 1.5f), dp(16)
+        ))
+    }
+
     // ---------------------------------------------------------------- Bluetooth für den Fahrmodus
 
     private fun askBluetooth() {
@@ -192,9 +225,9 @@ class SettingsActivity : Activity() {
             if (!ok) {
                 Prefs.set(this, Flag.AUTO_DRIVE, false)
                 autoDriveRow?.sw?.setOn(false, animate = true)
-                Ui.showBanner(frame, "Ohne Bluetooth-Erlaubnis kann die App das Auto nicht erkennen", 3500L)
+                Ui.showBanner(frame, t.btDenied, 3500L)
             } else {
-                Ui.showBanner(frame, "Fahrmodus schaltet ab jetzt automatisch um")
+                Ui.showBanner(frame, t.btOk)
             }
         }
     }

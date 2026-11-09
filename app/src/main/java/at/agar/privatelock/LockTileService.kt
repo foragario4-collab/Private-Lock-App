@@ -31,7 +31,7 @@ class LockTileService : TileService() {
         val on = Prefs.active(this)
         t.state = if (on) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
         t.label = "Private Lock"
-        if (Build.VERSION.SDK_INT >= 29) t.subtitle = if (on) "Aktiv" else "Aus"
+        if (Build.VERSION.SDK_INT >= 29) t.subtitle = if (on) L.of(this).tileOn else L.of(this).tileOff
         t.updateTile()
     }
 

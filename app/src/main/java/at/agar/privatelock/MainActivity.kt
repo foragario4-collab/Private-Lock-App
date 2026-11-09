@@ -34,6 +34,8 @@ class MainActivity : Activity(), SensorEventListener {
     private lateinit var modeText: TextView
 
     private var sm: SensorManager? = null
+    private lateinit var t: Strings
+    private var langAtCreate = ""
     private val handler = Handler(Looper.getMainLooper())
     private val testDetector = Detector { r -> onTestTrigger(r) }
     private var testUntil = 0L
@@ -44,6 +46,8 @@ class MainActivity : Activity(), SensorEventListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        t = L.of(this)
+        langAtCreate = L.code(this)
         LockService.createChannels(this)
         sm = getSystemService(SENSOR_SERVICE) as? SensorManager
         Ui.edgeToEdge(this)
@@ -63,12 +67,12 @@ class MainActivity : Activity(), SensorEventListener {
             gravity = Gravity.CENTER_VERTICAL
         }
         statusDot = View(this)
-        statusLine.addView(statusDot, LinearLayout.LayoutParams(dp(8), dp(8)).apply { rightMargin = dp(8) })
+        statusLine.addView(statusDot, LinearLayout.LayoutParams(dp(8), dp(8)).apply { marginEnd = dp(8) })
         statusText = Glass.label(this, "", 14f)
         statusLine.addView(statusText)
         titles.addView(statusLine, Ui.lp(dp(4)))
         header.addView(titles, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-        header.addView(Ui.iconButton(this, R.drawable.ic_settings, "Einstellungen") {
+        header.addView(Ui.iconButton(this, R.drawable.ic_settings, t.settings) {
             startActivity(Intent(this, SettingsActivity::class.java))
         }, LinearLayout.LayoutParams(dp(46), dp(46)))
         root.addView(header)
@@ -93,7 +97,7 @@ class MainActivity : Activity(), SensorEventListener {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
-        sensHead.addView(Glass.label(this, "Empfindlichkeit", 16f, Glass.TEXT).apply {
+        sensHead.addView(Glass.label(this, t.sensitivity, 16f, Glass.TEXT).apply {
             typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
         }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
         sensValue = Glass.label(this, "", 14f)
@@ -106,13 +110,13 @@ class MainActivity : Activity(), SensorEventListener {
         }, Ui.lp(dp(8)))
         graph = SensorGraphView(this)
         sensCard.addView(graph, Ui.lp(dp(6)))
-        sensCard.addView(Glass.label(this, "Bewegung live – Ausschläge über der Linie sperren das Handy.", 12.5f), Ui.lp(dp(10)))
+        sensCard.addView(Glass.label(this, t.graphCaption, 12.5f), Ui.lp(dp(10)))
         root.addView(sensCard, Ui.lp(dp(6)))
 
         // Modus
         val modeCard = Ui.card(this, 14)
         val modeIdx = Prefs.MODES.indexOf(Prefs.mode(this)).coerceAtLeast(0)
-        modeCard.addView(GlassSegmented(this, listOf("Normal", "Fahrmodus", "Tasche"), modeIdx) { i ->
+        modeCard.addView(GlassSegmented(this, listOf(t.modeNormal, t.modeDrive, t.modeBag), modeIdx) { i ->
             Prefs.setMode(this, Prefs.MODES[i])
             updateModeText()
             refreshThreshold()
@@ -125,8 +129,8 @@ class MainActivity : Activity(), SensorEventListener {
         root.addView(modeCard, Ui.lp(dp(16)))
 
         // Test
-        root.addView(Glass.button(this, "Sperre testen") { startTest() }, Ui.lp(dp(16)))
-        root.addView(Glass.label(this, "Testet die Erkennung 15 Sekunden lang – ohne wirklich zu sperren", 12.5f).apply {
+        root.addView(Glass.button(this, t.testButton) { startTest() }, Ui.lp(dp(16)))
+        root.addView(Glass.label(this, t.testCaption, 12.5f).apply {
             gravity = Gravity.CENTER
         }, Ui.lp(dp(8)))
 
@@ -139,6 +143,11 @@ class MainActivity : Activity(), SensorEventListener {
 
     override fun onResume() {
         super.onResume()
+        // Sprache in den Einstellungen geändert -> Bildschirm neu aufbauen
+        if (L.code(this) != langAtCreate) {
+            recreate()
+            return
+        }
         sm?.let { m ->
             m.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let { m.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
         }
@@ -187,7 +196,7 @@ class MainActivity : Activity(), SensorEventListener {
         try {
             startActivityForResult(Admin.requestIntent(this), req)
         } catch (_: Exception) {
-            Ui.showBanner(frame, "Die Sperr-Berechtigung konnte nicht geöffnet werden")
+            Ui.showBanner(frame, t.adminOpenFail)
         }
     }
 
@@ -196,9 +205,9 @@ class MainActivity : Activity(), SensorEventListener {
         if (requestCode == REQ_ADMIN_ACTIVATE || requestCode == REQ_ADMIN_ONLY) {
             if (Admin.isActive(this)) {
                 if (requestCode == REQ_ADMIN_ACTIVATE) activate()
-                else Ui.showBanner(frame, "Sperr-Berechtigung erteilt")
+                else Ui.showBanner(frame, t.adminGranted)
             } else {
-                Ui.showBanner(frame, "Ohne Sperr-Berechtigung kann die App das Handy nicht sperren", 3800L)
+                Ui.showBanner(frame, t.adminDenied, 3800L)
             }
             refreshStatus(false)
         }
@@ -212,10 +221,10 @@ class MainActivity : Activity(), SensorEventListener {
         orb.show(active, animate)
 
         val (color, text) = when {
-            active && !admin -> Glass.ORANGE to "Sperr-Berechtigung fehlt"
-            active && Prefs.drivingByCar(this) -> 0xFF30D158.toInt() to "Schutz aktiv · Fahrmodus (Auto)"
-            active -> 0xFF30D158.toInt() to "Schutz aktiv · überwacht Bewegung"
-            else -> 0x80EBEBF5.toInt() to "Schutz ausgeschaltet"
+            active && !admin -> Glass.ORANGE to t.statusAdminMissing
+            active && Prefs.drivingByCar(this) -> 0xFF30D158.toInt() to t.statusDriveCar
+            active -> 0xFF30D158.toInt() to t.statusActive
+            else -> 0x80EBEBF5.toInt() to t.statusOff
         }
         statusDot.background = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
@@ -227,8 +236,8 @@ class MainActivity : Activity(), SensorEventListener {
         if (!admin) {
             val card = Ui.card(this, 2)
             card.addView(Ui.navRow(
-                this, "Sperr-Berechtigung fehlt", "Ohne sie kann die App das Handy nicht sperren",
-                "Erlauben", Glass.ORANGE
+                this, t.statusAdminMissing, t.adminMissingSub,
+                t.allow, Glass.ORANGE
             ) { requestAdmin(REQ_ADMIN_ONLY) })
             warnBox.addView(card, Ui.lp(dp(16)))
         }
@@ -236,18 +245,18 @@ class MainActivity : Activity(), SensorEventListener {
 
     private fun updateSensLabel(sens: Int) {
         val word = when {
-            sens <= 3 -> "Niedrig"
-            sens <= 7 -> "Mittel"
-            else -> "Hoch"
+            sens <= 3 -> t.low
+            sens <= 7 -> t.medium
+            else -> t.high
         }
         sensValue.text = "$word · $sens/10"
     }
 
     private fun updateModeText() {
         modeText.text = when (Prefs.mode(this)) {
-            Prefs.MODE_DRIVE -> "Weniger empfindlich – Bremsen und Schlaglöcher lösen nichts aus."
-            Prefs.MODE_BAG -> "Sperrt nur bei starkem Ruck, z. B. wenn jemand das Handy herauszieht."
-            else -> "Standard-Schutz für den Alltag."
+            Prefs.MODE_DRIVE -> t.modeDriveText
+            Prefs.MODE_BAG -> t.modeBagText
+            else -> t.modeNormalText
         }
     }
 
@@ -280,16 +289,16 @@ class MainActivity : Activity(), SensorEventListener {
         testUntil = SystemClock.elapsedRealtime() + TEST_MS
         LockService.pausedUntil = testUntil
         testDetector.reset()
-        Ui.showBanner(frame, "Test läuft – schnapp dir das Handy oder beweg es ruckartig")
+        Ui.showBanner(frame, t.testRunning)
         handler.removeCallbacksAndMessages(null)
-        handler.postDelayed({ Ui.showBanner(frame, "Test beendet – der Schutz ist wieder scharf") }, TEST_MS)
+        handler.postDelayed({ Ui.showBanner(frame, t.testEnded) }, TEST_MS)
     }
 
     private fun onTestTrigger(r: Detector.Reason) {
         if (SystemClock.elapsedRealtime() > testUntil) return
         Feedback.vibrate(this, 200)
-        val what = if (r == Detector.Reason.FALL) "Sturz erkannt!" else "Erkannt!"
-        Ui.showBanner(frame, "$what Im Echtbetrieb wäre das Handy jetzt gesperrt.")
+        val what = if (r == Detector.Reason.FALL) t.detectedFall else t.detectedGrab
+        Ui.showBanner(frame, "$what ${t.testWouldLock}")
     }
 
     companion object {

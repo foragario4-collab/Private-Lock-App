@@ -39,10 +39,7 @@ object Admin {
 
     fun requestIntent(ctx: Context): Intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
         putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, component(ctx))
-        putExtra(
-            DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-            "Damit Private Lock dein Handy bei plötzlicher Bewegung sofort sperren kann."
-        )
+        putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, L.of(ctx).adminExplain)
     }
 
     /** true = gesperrt */

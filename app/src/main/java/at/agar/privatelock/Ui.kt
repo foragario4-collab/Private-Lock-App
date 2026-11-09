@@ -41,6 +41,8 @@ object Ui {
     fun screen(a: Activity): Screen {
         val frame = FrameLayout(a)
         frame.background = Glass.backdrop()
+        // Arabisch, Persisch, Urdu, Hebräisch: alles von rechts nach links
+        frame.layoutDirection = if (L.isRtl(a)) View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR
         val blobs = listOf(
             Triple(0xE63A5BFF.toInt(), 460, Pair(-150, -80)),
             Triple(0xD9B23CFF.toInt(), 420, Pair(170, 330)),
@@ -92,7 +94,7 @@ object Ui {
 
     fun section(ctx: Context, s: String) = Glass.label(ctx, s.uppercase(), 13f).apply {
         letterSpacing = 0.06f
-        setPadding(ctx.dp(6), 0, 0, 0)
+        setPaddingRelative(ctx.dp(6), 0, 0, 0)
     }
 
     fun separator(ctx: Context) = View(ctx).apply {
@@ -124,7 +126,7 @@ object Ui {
         }
         r.addView(sw, LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply { leftMargin = ctx.dp(12) })
+        ).apply { marginStart = ctx.dp(12) })
         r.isClickable = true
         r.setOnClickListener { if (sw.isEnabled) sw.setOn(!sw.isChecked, animate = true, fromUser = true) }
         return SwitchRow(r, sw)
@@ -141,17 +143,18 @@ object Ui {
         }
         r.addView(texts(ctx, title, sub, if (danger) 0xFFFF8A80.toInt() else Glass.TEXT),
             LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        val arrow = if (L.isRtl(ctx)) "‹" else "›"
         val right = when {
-            value != null && onClick != null -> "$value  ›"
+            value != null && onClick != null -> "$value  $arrow"
             value != null -> value
-            onClick != null -> "›"
+            onClick != null -> arrow
             else -> null
         }
         if (right != null) {
             r.addView(Glass.label(ctx, right, if (value == null) 24f else 16f, valueColor),
                 LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply { leftMargin = ctx.dp(12) })
+                ).apply { marginStart = ctx.dp(12) })
         }
         if (onClick != null) {
             r.isClickable = true
@@ -196,19 +199,22 @@ object Ui {
     fun backButton(ctx: Context, onClick: () -> Unit): LinearLayout = LinearLayout(ctx).apply {
         orientation = LinearLayout.HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
-        setPadding(ctx.dp(10), ctx.dp(10), ctx.dp(18), ctx.dp(10))
+        setPaddingRelative(ctx.dp(10), ctx.dp(10), ctx.dp(18), ctx.dp(10))
         background = RippleDrawable(
             ColorStateList.valueOf(0x40FFFFFF),
             LiquidGlassDrawable(ctx.dp(22).toFloat(), 0x26FFFFFF, ctx.dp(1).toFloat() * 1.5f), null
         )
-        addView(ImageView(ctx).apply { setImageResource(R.drawable.ic_back) })
-        addView(Glass.label(ctx, "Zurück", 16f, Glass.TEXT).apply {
+        addView(ImageView(ctx).apply {
+            setImageResource(R.drawable.ic_back)
+            if (L.isRtl(ctx)) scaleX = -1f // Pfeil zeigt bei RTL nach rechts
+        })
+        addView(Glass.label(ctx, L.of(ctx).back, 16f, Glass.TEXT).apply {
             typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            setPadding(ctx.dp(4), 0, 0, 0)
+            setPaddingRelative(ctx.dp(4), 0, 0, 0)
         })
         isClickable = true
         isFocusable = true
-        contentDescription = "Zurück"
+        contentDescription = L.of(ctx).back
         setOnClickListener { onClick() }
         Glass.pressEffect(this, 0.94f)
     }

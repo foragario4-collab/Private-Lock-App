@@ -27,6 +27,11 @@ object Prefs {
     const val DELAY_LONG = "lang"
     val DELAYS = listOf(DELAY_NOW, DELAY_SHORT, DELAY_LONG)
 
+    const val LANG_AUTO = "auto"
+
+    fun lang(ctx: Context): String = get(ctx).getString("lang", LANG_AUTO) ?: LANG_AUTO
+    fun setLang(ctx: Context, code: String) = get(ctx).edit().putString("lang", code).apply()
+
     fun get(ctx: Context): SharedPreferences = ctx.getSharedPreferences("einstellungen", Context.MODE_PRIVATE)
 
     fun active(ctx: Context): Boolean = get(ctx).getBoolean("active", false)
@@ -62,9 +67,12 @@ object Prefs {
         else -> 300L
     }
 
-    fun modeName(m: String): String = when (m) {
-        MODE_DRIVE -> "Fahrmodus"
-        MODE_BAG -> "Tasche"
-        else -> "Normal"
+    fun modeName(ctx: Context, m: String): String {
+        val s = L.of(ctx)
+        return when (m) {
+            MODE_DRIVE -> s.modeDrive
+            MODE_BAG -> s.modeBag
+            else -> s.modeNormal
+        }
     }
 }
