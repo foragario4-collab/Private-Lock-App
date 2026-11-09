@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Private Lock</string>
+    <string name="admin_desc">เพื่อให้ Private Lock ล็อกโทรศัพท์ของคุณได้ทันทีเมื่อมีการเคลื่อนไหวกะทันหัน</string>
+</resources>

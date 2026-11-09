@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Private Lock</string>
+    <string name="admin_desc">Zodat Private Lock je telefoon bij een plotselinge beweging meteen kan vergrendelen.</string>
+</resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Private Lock</string>
+    <string name="admin_desc">Kako bi Private Lock mogao odmah zaključati mobitel pri naglom pokretu.</string>
+</resources>

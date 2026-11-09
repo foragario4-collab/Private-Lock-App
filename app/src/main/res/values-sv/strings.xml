@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Private Lock</string>
+    <string name="admin_desc">Så att Private Lock kan låsa telefonen direkt vid en plötslig rörelse.</string>
+</resources>

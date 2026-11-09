@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Private Lock</string>
+    <string name="admin_desc">Để Private Lock có thể khóa điện thoại ngay khi có chuyển động đột ngột.</string>
+</resources>
