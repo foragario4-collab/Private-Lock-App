@@ -32,6 +32,7 @@ class MainActivity : Activity(), SensorEventListener {
     private lateinit var sensValue: TextView
     private lateinit var graph: SensorGraphView
     private lateinit var modeText: TextView
+    private lateinit var appLockBox: LinearLayout
 
     private var sm: SensorManager? = null
     private lateinit var t: Strings
@@ -128,6 +129,10 @@ class MainActivity : Activity(), SensorEventListener {
         modeCard.addView(modeText, Ui.lp(dp(10)))
         root.addView(modeCard, Ui.lp(dp(16)))
 
+        // App-Sperre
+        appLockBox = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        root.addView(appLockBox, Ui.lp(dp(16)))
+
         // Test
         root.addView(Glass.button(this, t.testButton) { startTest() }, Ui.lp(dp(16)))
         root.addView(Glass.label(this, t.testCaption, 12.5f).apply {
@@ -148,6 +153,8 @@ class MainActivity : Activity(), SensorEventListener {
             recreate()
             return
         }
+        if (AppLock.gateSelf(this)) return
+        refreshAppLock()
         sm?.let { m ->
             m.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let { m.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
         }
@@ -241,6 +248,28 @@ class MainActivity : Activity(), SensorEventListener {
             ) { requestAdmin(REQ_ADMIN_ONLY) })
             warnBox.addView(card, Ui.lp(dp(16)))
         }
+    }
+
+    /** Karte "App-Sperre": Anzahl geschützter Apps + "Jetzt alle sperren" */
+    private fun refreshAppLock() {
+        appLockBox.removeAllViews()
+        val card = Ui.card(this, 2)
+        val n = AppLock.selected(this).size
+        val acc = AppLockService.isEnabled(this)
+        card.addView(Ui.navRow(
+            this, "🔒  " + t.secAppLock, String.format(t.appsCount, n.toString()),
+            if (acc || n == 0) null else t.allow, Glass.ORANGE
+        ) { startActivity(Intent(this, AppLockActivity::class.java)) })
+        if (n > 0) {
+            card.addView(Ui.separator(this))
+            card.addView(Ui.navRow(this, t.lockAllNow, null, null) {
+                AppLock.lockAll(this)
+                AppLock.selfUnlocked = true
+                Feedback.vibrate(this, 40)
+                Ui.showBanner(frame, t.lockedAllMsg)
+            })
+        }
+        appLockBox.addView(card)
     }
 
     private fun updateSensLabel(sens: Int) {

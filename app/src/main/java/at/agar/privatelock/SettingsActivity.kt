@@ -100,6 +100,7 @@ class SettingsActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        if (AppLock.gateSelf(this)) return
         refreshPermissions()
     }
 

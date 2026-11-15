@@ -55,6 +55,7 @@ class LockService : Service(), SensorEventListener {
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(c: Context, i: Intent) {
             if (i.action == Intent.ACTION_USER_PRESENT) stopAlarm()
+            if (i.action == Intent.ACTION_SCREEN_OFF) AppLock.onScreenOff()
             updateListening()
         }
     }
@@ -92,6 +93,11 @@ class LockService : Service(), SensorEventListener {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_LOCK_APPS) {
+            AppLock.lockAll(this)
+            Feedback.vibrate(this, 40)
+            return if (Prefs.active(this)) START_STICKY else START_NOT_STICKY
+        }
         if (intent?.action == ACTION_STOP) {
             Prefs.setActive(this, false)
             stopSelf()
@@ -199,6 +205,8 @@ class LockService : Service(), SensorEventListener {
 
     private fun doLock(reason: Detector.Reason) {
         val s = L.of(this)
+        // Ausgewählte Apps bleiben gesperrt, bis man sie einzeln entsperrt
+        if (Prefs.on(this, Flag.APPLOCK_THEFT) && AppLock.selected(this).isNotEmpty()) AppLock.lockAll(this)
         if (!Admin.lockNow(this)) {
             notifyEvent(s.lockFailTitle, s.lockFailText)
             return
@@ -285,14 +293,21 @@ class LockService : Service(), SensorEventListener {
             this, 1, Intent(this, LockService::class.java).setAction(ACTION_STOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        return Notification.Builder(this, CH_STATUS)
+        val b = Notification.Builder(this, CH_STATUS)
             .setSmallIcon(R.drawable.ic_stat_lock)
             .setContentTitle(s.notifActiveTitle)
             .setContentText(String.format(s.notifActiveText, modeText))
             .setOngoing(true)
             .setContentIntent(openAppIntent())
-            .addAction(Notification.Action.Builder(null as android.graphics.drawable.Icon?, s.turnOff, stop).build())
-            .build()
+        if (AppLock.selected(this).isNotEmpty()) {
+            val lockApps = PendingIntent.getService(
+                this, 2, Intent(this, LockService::class.java).setAction(ACTION_LOCK_APPS),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            b.addAction(Notification.Action.Builder(null as android.graphics.drawable.Icon?, s.lockAppsAction, lockApps).build())
+        }
+        b.addAction(Notification.Action.Builder(null as android.graphics.drawable.Icon?, s.turnOff, stop).build())
+        return b.build()
     }
 
     private fun updateNotification() {
@@ -326,6 +341,7 @@ class LockService : Service(), SensorEventListener {
         private const val ID_STATUS = 1
         private const val ID_EVENT = 2
         const val ACTION_STOP = "at.agar.privatelock.STOP"
+        const val ACTION_LOCK_APPS = "at.agar.privatelock.LOCK_APPS"
 
         @Volatile
         var running = false
