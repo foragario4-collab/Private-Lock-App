@@ -128,6 +128,8 @@ object AppLock {
 
     @Synchronized
     fun needsLock(ctx: Context, pkg: String): Boolean {
+        // Ohne Sperrmethode niemals sperren – sonst wäre man ausgesperrt
+        if (!canAuthenticate(ctx)) return false
         if (pkg == ctx.packageName) return protectSelf(ctx) && !selfUnlocked
         if (pkg !in selected(ctx)) return false
         if (pkg in lockedNow(ctx)) return true
@@ -191,6 +193,12 @@ object AppLock {
 
     fun authFinish() {
         authEnd = SystemClock.elapsedRealtime()
+    }
+
+    /** Sperrbildschirm wurde verdrängt: sofort wieder prüfen dürfen (ohne Wartezeit) */
+    fun authReset() {
+        authStart = 0L
+        authEnd = 0L
     }
 
     fun authActive(): Boolean {

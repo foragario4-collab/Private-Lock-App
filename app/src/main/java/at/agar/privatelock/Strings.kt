@@ -141,7 +141,8 @@ class Strings(
     val cancel: String,
     val save: String,
     val lockAppsAction: String,
-    val settingsHint: String
+    val settingsHint: String,
+    val setupMsg: String
 )
 
 /** Sprache wählen: automatisch (Handy-Sprache) oder fest eingestellt */

@@ -31,6 +31,9 @@ class LockActivity : Activity() {
     private var inSystemAuth = false
     private var cancel: CancellationSignal? = null
     private var done = false
+    private var userLeft = false      // Home/Übersicht gedrückt
+    private var autoPrompted = false  // Fingerabdruck-Abfrage schon automatisch gezeigt
+    private var stopped = false
     private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,17 +52,50 @@ class LockActivity : Activity() {
         inSystemAuth = false
         done = false
         setup(intent)
+        if (hasWindowFocus()) autoPrompt()
     }
 
     private fun setup(i: Intent?) {
         pkg = i?.getStringExtra(EXTRA_PKG) ?: packageName
+        userLeft = false
+        autoPrompted = false
         if (!AppLock.canAuthenticate(this)) {
             // Keine Möglichkeit zu entsperren (keine Displaysperre, keine PIN) -> nicht aussperren
             success()
             return
         }
         build()
-        if (!AppLock.usesPin(this)) handler.postDelayed({ if (!done) systemAuth() }, 250L)
+    }
+
+    /** Erst wenn der Sperrbildschirm wirklich vorne ist, die System-Abfrage starten (sonst bricht Android sie ab) */
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) autoPrompt()
+    }
+
+    private fun autoPrompt() {
+        if (done || inSystemAuth || autoPrompted || AppLock.usesPin(this)) return
+        autoPrompted = true
+        handler.postDelayed({ if (!done && !stopped) systemAuth() }, 80L)
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        userLeft = true
+    }
+
+    override fun onStart() {
+        super.onStart()
+        stopped = false
+    }
+
+    /** Sperrbildschirm wurde von der App verdrängt -> schließen und gleich neu darüberlegen */
+    private fun coveredByApp() {
+        done = true
+        cancel?.cancel()
+        AppLock.authReset()
+        finish()
+        AppLockService.instance?.recheckSoon()
     }
 
     private fun build() {
@@ -171,6 +207,19 @@ class LockActivity : Activity() {
 
                     override fun onAuthenticationError(errorCode: Int, errString: CharSequence?) {
                         inSystemAuth = false
+                        if (done) return
+                        if (stopped && !userLeft) {
+                            coveredByApp()
+                        } else if (stopped) {
+                            // Während der Abfrage Home gedrückt
+                            done = true
+                            AppLock.authFinish()
+                            finish()
+                        } else if (errorCode != BiometricPrompt.BIOMETRIC_ERROR_USER_CANCELED &&
+                            errorCode != BiometricPrompt.BIOMETRIC_ERROR_CANCELED
+                        ) {
+                            Ui.showBanner(frame, errString?.toString() ?: t.noSecureLock)
+                        }
                     }
                 })
             } else {
@@ -244,11 +293,16 @@ class LockActivity : Activity() {
 
     override fun onStop() {
         super.onStop()
-        // Weggewischt / Home gedrückt: Sperrbildschirm schließen (die App bleibt gesperrt)
-        if (!inSystemAuth && !isFinishing) {
+        stopped = true
+        if (inSystemAuth || isFinishing || done) return
+        if (userLeft) {
+            // Home gedrückt: Sperrbildschirm schließen (die App bleibt gesperrt)
             done = true
             AppLock.authFinish()
             finish()
+        } else {
+            // Die App hat sich darübergeschoben (z. B. nach dem Ladebildschirm)
+            coveredByApp()
         }
     }
 

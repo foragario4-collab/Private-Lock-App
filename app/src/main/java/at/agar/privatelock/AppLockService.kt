@@ -7,6 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.os.PowerManager
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.inputmethod.InputMethodManager
@@ -19,6 +22,7 @@ class AppLockService : AccessibilityService() {
 
     private var current: String? = null
     private var ignore: Set<String> = emptySet()
+    private val handler = Handler(Looper.getMainLooper())
 
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(c: Context, i: Intent) {
@@ -65,10 +69,20 @@ class AppLockService : AccessibilityService() {
         if (AppLock.needsLock(this, c)) AppLock.showLock(this, c)
     }
 
+    /** Die App hat sich über den Sperrbildschirm geschoben -> gleich wieder abdecken */
+    fun recheckSoon() {
+        handler.removeCallbacksAndMessages(null)
+        handler.postDelayed({
+            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+            if (pm.isInteractive) recheck()
+        }, 300L)
+    }
+
     override fun onInterrupt() {}
 
     override fun onDestroy() {
         if (instance === this) instance = null
+        handler.removeCallbacksAndMessages(null)
         try {
             unregisterReceiver(screenReceiver)
         } catch (_: Exception) {

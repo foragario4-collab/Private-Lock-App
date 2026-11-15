@@ -58,10 +58,13 @@ class AppLockActivity : Activity() {
         })
         root.addView(apps, Ui.lp(dp(20)))
         root.addView(Glass.button(this, "🔒  " + t.lockAllNow, primary = true) {
-            AppLock.lockAll(this)
-            AppLock.selfUnlocked = true // wir sind gerade hier drin
-            Feedback.vibrate(this, 40)
-            Ui.showBanner(frame, t.lockedAllMsg)
+            LockSetup.ensure(this, onReady = {
+                AppLock.lockAll(this)
+                AppLock.selfUnlocked = true // wir sind gerade hier drin
+                Feedback.vibrate(this, 40)
+                build()
+                Ui.showBanner(frame, t.lockedAllMsg)
+            })
         }, Ui.lp(dp(14)))
 
         // Wann
@@ -92,23 +95,39 @@ class AppLockActivity : Activity() {
         ) { i ->
             val m = AppLock.METHODS[i]
             AppLock.setMethod(this, m)
-            if (m == AppLock.METHOD_PIN && !AppLock.hasPin(this)) askPin()
+            if (m == AppLock.METHOD_PIN && !AppLock.hasPin(this)) {
+                LockSetup.askPin(this, onSaved = {
+                    build()
+                    Ui.showBanner(frame, t.pinSaved)
+                }, onCancel = {
+                    // ohne PIN zurück auf Fingerabdruck/Code, damit man sich nicht aussperrt
+                    AppLock.setMethod(this, AppLock.METHOD_SYSTEM)
+                    build()
+                })
+            }
         })
         method.addView(Ui.separator(this))
         val hasPin = AppLock.hasPin(this)
         method.addView(Ui.navRow(
             this, t.pinTitle, null, if (hasPin) t.pinIsSet else t.pinNotSet,
             if (hasPin) Glass.GREEN else Glass.TEXT_SOFT
-        ) { askPin() })
+        ) {
+            LockSetup.askPin(this, onSaved = {
+                build()
+                Ui.showBanner(frame, t.pinSaved)
+            })
+        })
         method.addView(Ui.separator(this))
         lateinit var selfRow: Ui.SwitchRow
         selfRow = Ui.switchRow(this, t.selfTitle, t.selfSub, AppLock.protectSelf(this)) { on ->
-            if (on && !AppLock.canAuthenticate(this)) {
-                selfRow.sw.setOn(false, animate = true)
-                Ui.showBanner(frame, t.noSecureLock, 3500L)
+            if (on) {
+                LockSetup.ensure(this, onReady = {
+                    AppLock.setProtectSelf(this, true)
+                    AppLock.selfUnlocked = true
+                    build()
+                }, onCancel = { selfRow.sw.setOn(false, animate = true) })
             } else {
-                AppLock.setProtectSelf(this, on)
-                if (on) AppLock.selfUnlocked = true
+                AppLock.setProtectSelf(this, false)
             }
         }
         method.addView(selfRow.view)
@@ -140,60 +159,13 @@ class AppLockActivity : Activity() {
             .setPositiveButton(t.allow) { _, _ -> openAccessibility() }
             .setNegativeButton(t.cancel, null)
             .show()
-        glassy(d)
+        LockSetup.glassy(this, d)
     }
 
     private fun openAccessibility() {
         try {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         } catch (_: Exception) {
-        }
-    }
-
-    // ---------------------------------------------------------------- PIN festlegen
-
-    private fun askPin() {
-        val box = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(22), dp(8), dp(22), dp(4))
-        }
-        fun pinField(hint: String) = Glass.input(this, hint, true).apply {
-            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_PASSWORD
-            gravity = Gravity.CENTER
-        }
-        val a = pinField(t.newPin)
-        val b = pinField(t.confirmPin)
-        box.addView(a)
-        box.addView(b, Ui.lp(dp(10)))
-        val d = AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-            .setTitle(t.pinTitle)
-            .setView(box)
-            .setPositiveButton(t.save, null)
-            .setNegativeButton(t.cancel, null)
-            .show()
-        glassy(d)
-        d.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener {
-            val p1 = a.text.toString()
-            val p2 = b.text.toString()
-            if (p1.length !in 4..8 || !p1.all { it.isDigit() }) {
-                b.error = t.pinTooShort
-            } else if (p1 != p2) {
-                b.error = t.pinMismatch
-            } else {
-                AppLock.setPin(this, p1)
-                d.dismiss()
-                build()
-                Ui.showBanner(frame, t.pinSaved)
-            }
-        }
-    }
-
-    private fun glassy(d: AlertDialog) {
-        d.window?.setBackgroundDrawable(InsetDrawable(
-            LiquidGlassDrawable(dp(28).toFloat(), 0xF2141A2A.toInt(), dp(1).toFloat() * 1.5f), dp(16)
-        ))
-        for (b in intArrayOf(AlertDialog.BUTTON_POSITIVE, AlertDialog.BUTTON_NEGATIVE)) {
-            d.getButton(b)?.setTextColor(Glass.ACCENT)
         }
     }
 }

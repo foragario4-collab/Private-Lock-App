@@ -117,7 +117,7 @@ class AppPickerActivity : Activity() {
                 LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
             val sw = GlassSwitch(this)
             sw.setOn(AppLock.isSelected(this, app.pkg))
-            sw.onChange = { on -> toggle(app.pkg, on) }
+            sw.onChange = { on -> toggle(app.pkg, on, sw) }
             row.addView(sw, LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply { marginStart = dp(12) })
@@ -128,13 +128,25 @@ class AppPickerActivity : Activity() {
         }
     }
 
-    private fun toggle(pkg: String, on: Boolean) {
+    private fun toggle(pkg: String, on: Boolean, sw: GlassSwitch) {
         Feedback.vibrate(this, 15)
-        AppLock.setSelected(this, pkg, on)
-        if (on && !warned) {
+        if (!on) {
+            AppLock.setSelected(this, pkg, false)
+            return
+        }
+        if (!LockSetup.ready(this)) {
+            // Erst Sperrmethode festlegen, dann App schützen
+            sw.setOn(false, animate = true)
+            LockSetup.ensure(this, onReady = {
+                AppLock.setSelected(this, pkg, true)
+                sw.setOn(true, animate = true)
+            })
+            return
+        }
+        AppLock.setSelected(this, pkg, true)
+        if (!warned) {
             warned = true
-            if (!AppLock.canAuthenticate(this)) Ui.showBanner(frame, t.noSecureLock, 4000L)
-            else if (!AppLockService.isEnabled(this)) Ui.showBanner(frame, t.accSub, 3500L)
+            if (!AppLockService.isEnabled(this)) Ui.showBanner(frame, t.accSub, 3500L)
         }
     }
 

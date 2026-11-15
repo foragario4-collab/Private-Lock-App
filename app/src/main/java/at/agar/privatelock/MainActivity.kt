@@ -263,10 +263,12 @@ class MainActivity : Activity(), SensorEventListener {
         if (n > 0) {
             card.addView(Ui.separator(this))
             card.addView(Ui.navRow(this, t.lockAllNow, null, null) {
-                AppLock.lockAll(this)
-                AppLock.selfUnlocked = true
-                Feedback.vibrate(this, 40)
-                Ui.showBanner(frame, t.lockedAllMsg)
+                LockSetup.ensure(this, onReady = {
+                    AppLock.lockAll(this)
+                    AppLock.selfUnlocked = true
+                    Feedback.vibrate(this, 40)
+                    Ui.showBanner(frame, t.lockedAllMsg)
+                })
             })
         }
         appLockBox.addView(card)
