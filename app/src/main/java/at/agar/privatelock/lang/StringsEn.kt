@@ -138,5 +138,6 @@ internal val STR_EN = Strings(
     cancel = "Cancel",
     save = "Save",
     lockAppsAction = "Lock apps",
-    settingsHint = "Tip: also protect the “Settings” app so nobody can turn the lock off."
+    settingsHint = "Tip: also protect the “Settings” app so nobody can turn the lock off.",
+    setupMsg = "First choose how you’ll open locked apps again – otherwise you could lock yourself out."
 )

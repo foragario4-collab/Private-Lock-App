@@ -138,5 +138,6 @@ internal val STR_KU = Strings(
     cancel = "Betal",
     save = "Tomar bike",
     lockAppsAction = "Sepanan kilît bike",
-    settingsHint = "Şîret: sepana „Mîheng“ jî biparêze da ku kes nikaribe kilîtê bigire."
+    settingsHint = "Şîret: sepana „Mîheng“ jî biparêze da ku kes nikaribe kilîtê bigire.",
+    setupMsg = "Pêşî hilbijêre ka tu ê sepanên kilîtkirî çawa dîsa vekî – wekî din tu dikarî xwe derve bihêlî."
 )

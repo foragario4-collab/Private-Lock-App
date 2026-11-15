@@ -138,5 +138,6 @@ internal val STR_SW = Strings(
     cancel = "Ghairi",
     save = "Hifadhi",
     lockAppsAction = "Funga programu",
-    settingsHint = "Kidokezo: linda pia programu ya “Mipangilio” ili mtu asiweze kuzima kufuli."
+    settingsHint = "Kidokezo: linda pia programu ya “Mipangilio” ili mtu asiweze kuzima kufuli.",
+    setupMsg = "Kwanza chagua jinsi utakavyofungua tena programu zilizofungwa – la sivyo unaweza kujifungia nje."
 )

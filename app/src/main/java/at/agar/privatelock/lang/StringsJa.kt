@@ -138,5 +138,6 @@ internal val STR_JA = Strings(
     cancel = "キャンセル",
     save = "保存",
     lockAppsAction = "アプリをロック",
-    settingsHint = "ヒント：「設定」アプリも保護すると、誰もロックをオフにできません。"
+    settingsHint = "ヒント：「設定」アプリも保護すると、誰もロックをオフにできません。",
+    setupMsg = "まず、ロックしたアプリを開く方法を決めてください。そうしないと自分が開けなくなる可能性があります。"
 )

@@ -138,5 +138,6 @@ internal val STR_ZH = Strings(
     cancel = "取消",
     save = "保存",
     lockAppsAction = "锁定应用",
-    settingsHint = "提示：也请保护“设置”应用，以免他人关闭锁定。"
+    settingsHint = "提示：也请保护“设置”应用，以免他人关闭锁定。",
+    setupMsg = "请先选择如何重新打开已锁定的应用——否则你可能会把自己锁在外面。"
 )

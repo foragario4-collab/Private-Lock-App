@@ -138,5 +138,6 @@ internal val STR_HU = Strings(
     cancel = "Mégse",
     save = "Mentés",
     lockAppsAction = "Alkalmazások zárolása",
-    settingsHint = "Tipp: védd a „Beállítások” alkalmazást is, hogy senki ne kapcsolhassa ki a zárat."
+    settingsHint = "Tipp: védd a „Beállítások” alkalmazást is, hogy senki ne kapcsolhassa ki a zárat.",
+    setupMsg = "Előbb válaszd ki, hogyan nyitod meg újra a zárolt alkalmazásokat – különben kizárhatod magad."
 )

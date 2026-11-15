@@ -138,5 +138,6 @@ internal val STR_SV = Strings(
     cancel = "Avbryt",
     save = "Spara",
     lockAppsAction = "Lås appar",
-    settingsHint = "Tips: skydda även appen ”Inställningar” så att ingen kan stänga av låset."
+    settingsHint = "Tips: skydda även appen ”Inställningar” så att ingen kan stänga av låset.",
+    setupMsg = "Välj först hur du öppnar låsta appar igen – annars kan du låsa ute dig själv."
 )

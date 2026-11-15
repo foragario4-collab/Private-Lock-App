@@ -138,5 +138,6 @@ internal val STR_DE = Strings(
     cancel = "Abbrechen",
     save = "Speichern",
     lockAppsAction = "Apps sperren",
-    settingsHint = "Tipp: Schütze auch die App „Einstellungen“, damit niemand die Sperre ausschalten kann."
+    settingsHint = "Tipp: Schütze auch die App „Einstellungen“, damit niemand die Sperre ausschalten kann.",
+    setupMsg = "Lege zuerst fest, wie du gesperrte Apps wieder öffnest – sonst könntest du dich aussperren."
 )

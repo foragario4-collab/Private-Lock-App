@@ -138,5 +138,6 @@ internal val STR_PL = Strings(
     cancel = "Anuluj",
     save = "Zapisz",
     lockAppsAction = "Zablokuj aplikacje",
-    settingsHint = "Wskazówka: chroń też aplikację „Ustawienia”, aby nikt nie mógł wyłączyć blokady."
+    settingsHint = "Wskazówka: chroń też aplikację „Ustawienia”, aby nikt nie mógł wyłączyć blokady.",
+    setupMsg = "Najpierw wybierz, jak otworzysz zablokowane aplikacje – inaczej możesz zablokować sam siebie."
 )

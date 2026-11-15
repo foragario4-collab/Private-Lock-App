@@ -138,5 +138,6 @@ internal val STR_SQ = Strings(
     cancel = "Anulo",
     save = "Ruaj",
     lockAppsAction = "Kyç aplikacionet",
-    settingsHint = "Këshillë: mbro edhe aplikacionin „Cilësimet“ që askush të mos e fikë kyçjen."
+    settingsHint = "Këshillë: mbro edhe aplikacionin „Cilësimet“ që askush të mos e fikë kyçjen.",
+    setupMsg = "Zgjidh fillimisht si do t’i hapësh aplikacionet e kyçura – përndryshe mund të mbetesh jashtë."
 )

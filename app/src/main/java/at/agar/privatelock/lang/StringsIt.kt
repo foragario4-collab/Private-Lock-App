@@ -138,5 +138,6 @@ internal val STR_IT = Strings(
     cancel = "Annulla",
     save = "Salva",
     lockAppsAction = "Blocca app",
-    settingsHint = "Suggerimento: proteggi anche l’app «Impostazioni», così nessuno può disattivare il blocco."
+    settingsHint = "Suggerimento: proteggi anche l’app «Impostazioni», così nessuno può disattivare il blocco.",
+    setupMsg = "Scegli prima come riaprire le app bloccate, altrimenti potresti restare chiuso fuori."
 )

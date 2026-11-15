@@ -138,5 +138,6 @@ internal val STR_SK = Strings(
     cancel = "Zrušiť",
     save = "Uložiť",
     lockAppsAction = "Zamknúť aplikácie",
-    settingsHint = "Tip: chráň aj aplikáciu „Nastavenia“, aby nikto nemohol zámok vypnúť."
+    settingsHint = "Tip: chráň aj aplikáciu „Nastavenia“, aby nikto nemohol zámok vypnúť.",
+    setupMsg = "Najprv zvoľ, ako zamknuté aplikácie znova otvoríš – inak by si sa mohol zamknúť vonku."
 )

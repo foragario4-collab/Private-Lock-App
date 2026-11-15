@@ -138,5 +138,6 @@ internal val STR_ID = Strings(
     cancel = "Batal",
     save = "Simpan",
     lockAppsAction = "Kunci aplikasi",
-    settingsHint = "Tips: lindungi juga aplikasi “Setelan” agar tak ada yang bisa mematikan kunci."
+    settingsHint = "Tips: lindungi juga aplikasi “Setelan” agar tak ada yang bisa mematikan kunci.",
+    setupMsg = "Pilih dulu cara membuka lagi aplikasi yang terkunci – kalau tidak, kamu bisa terkunci sendiri."
 )

@@ -138,5 +138,6 @@ internal val STR_RO = Strings(
     cancel = "Anulează",
     save = "Salvează",
     lockAppsAction = "Blochează aplicațiile",
-    settingsHint = "Sfat: protejează și aplicația „Setări”, ca nimeni să nu poată opri blocarea."
+    settingsHint = "Sfat: protejează și aplicația „Setări”, ca nimeni să nu poată opri blocarea.",
+    setupMsg = "Alege mai întâi cum vei redeschide aplicațiile blocate – altfel ai putea rămâne blocat pe dinafară."
 )

@@ -138,5 +138,6 @@ internal val STR_KO = Strings(
     cancel = "취소",
     save = "저장",
     lockAppsAction = "앱 잠그기",
-    settingsHint = "팁: „설정“ 앱도 보호하면 아무도 잠금을 끌 수 없어요."
+    settingsHint = "팁: „설정“ 앱도 보호하면 아무도 잠금을 끌 수 없어요.",
+    setupMsg = "먼저 잠긴 앱을 다시 여는 방법을 정하세요. 그렇지 않으면 스스로 잠길 수 있어요."
 )

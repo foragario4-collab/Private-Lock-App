@@ -138,5 +138,6 @@ internal val STR_ES = Strings(
     cancel = "Cancelar",
     save = "Guardar",
     lockAppsAction = "Bloquear apps",
-    settingsHint = "Consejo: protege también la app «Ajustes» para que nadie pueda desactivar el bloqueo."
+    settingsHint = "Consejo: protege también la app «Ajustes» para que nadie pueda desactivar el bloqueo.",
+    setupMsg = "Primero elige cómo volverás a abrir las apps bloqueadas; si no, podrías quedarte fuera."
 )

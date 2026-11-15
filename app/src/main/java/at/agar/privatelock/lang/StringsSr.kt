@@ -138,5 +138,6 @@ internal val STR_SR = Strings(
     cancel = "Otkaži",
     save = "Sačuvaj",
     lockAppsAction = "Zaključaj aplikacije",
-    settingsHint = "Savet: zaštiti i aplikaciju „Podešavanja“ da niko ne može da isključi zaključavanje."
+    settingsHint = "Savet: zaštiti i aplikaciju „Podešavanja“ da niko ne može da isključi zaključavanje.",
+    setupMsg = "Prvo izaberi kako ćeš ponovo otvarati zaključane aplikacije – inače bi mogao sam sebe da zaključaš."
 )

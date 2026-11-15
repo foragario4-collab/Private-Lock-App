@@ -138,5 +138,6 @@ internal val STR_FR = Strings(
     cancel = "Annuler",
     save = "Enregistrer",
     lockAppsAction = "Verrouiller les apps",
-    settingsHint = "Astuce : protège aussi l’app « Paramètres » pour que personne ne puisse désactiver le verrou."
+    settingsHint = "Astuce : protège aussi l’app « Paramètres » pour que personne ne puisse désactiver le verrou.",
+    setupMsg = "Choisis d’abord comment rouvrir les apps verrouillées – sinon tu pourrais te bloquer toi-même."
 )

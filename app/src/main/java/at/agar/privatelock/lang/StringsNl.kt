@@ -138,5 +138,6 @@ internal val STR_NL = Strings(
     cancel = "Annuleren",
     save = "Opslaan",
     lockAppsAction = "Apps vergrendelen",
-    settingsHint = "Tip: beveilig ook de app „Instellingen”, zodat niemand de vergrendeling kan uitzetten."
+    settingsHint = "Tip: beveilig ook de app „Instellingen”, zodat niemand de vergrendeling kan uitzetten.",
+    setupMsg = "Kies eerst hoe je vergrendelde apps weer opent – anders kun je jezelf buitensluiten."
 )

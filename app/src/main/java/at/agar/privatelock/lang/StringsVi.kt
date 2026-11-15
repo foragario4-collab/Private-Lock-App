@@ -138,5 +138,6 @@ internal val STR_VI = Strings(
     cancel = "Hủy",
     save = "Lưu",
     lockAppsAction = "Khóa ứng dụng",
-    settingsHint = "Mẹo: bảo vệ cả ứng dụng “Cài đặt” để không ai tắt được khóa."
+    settingsHint = "Mẹo: bảo vệ cả ứng dụng “Cài đặt” để không ai tắt được khóa.",
+    setupMsg = "Hãy chọn trước cách mở lại ứng dụng đã khóa – nếu không bạn có thể tự khóa mình ở ngoài."
 )

@@ -138,5 +138,6 @@ internal val STR_TR = Strings(
     cancel = "İptal",
     save = "Kaydet",
     lockAppsAction = "Uygulamaları kilitle",
-    settingsHint = "İpucu: „Ayarlar“ uygulamasını da koru, böylece kimse kilidi kapatamaz."
+    settingsHint = "İpucu: „Ayarlar“ uygulamasını da koru, böylece kimse kilidi kapatamaz.",
+    setupMsg = "Önce kilitli uygulamaları nasıl açacağını seç – yoksa kendini dışarıda bırakabilirsin."
 )
