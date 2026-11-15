@@ -142,7 +142,22 @@ class Strings(
     val save: String,
     val lockAppsAction: String,
     val settingsHint: String,
-    val setupMsg: String
+    val setupMsg: String,
+    val secUpdates: String,
+    val updateCheck: String,
+    val updateAutoTitle: String,
+    val updateAutoSub: String,
+    val updateAvailable: String,
+    val updateInstall: String,
+    val updateDownloading: String,
+    val updateNone: String,
+    val updateFailed: String,
+    val updatePermission: String,
+    val diagTitle: String,
+    val diagService: String,
+    val diagScreenLock: String,
+    val diagBiometric: String,
+    val testOk: String
 )
 
 /** Sprache wählen: automatisch (Handy-Sprache) oder fest eingestellt */

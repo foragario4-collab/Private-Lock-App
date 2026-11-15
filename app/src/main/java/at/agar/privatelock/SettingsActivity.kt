@@ -91,6 +91,16 @@ class SettingsActivity : Activity() {
         permCard = Ui.card(this, 2)
         root.addView(permCard, Ui.lp(dp(8)))
 
+        // Updates
+        root.addView(Ui.section(this, t.secUpdates), Ui.lp(dp(26)))
+        val upd = Ui.card(this, 2)
+        upd.addView(Ui.switchRow(this, t.updateAutoTitle, t.updateAutoSub, Prefs.on(this, Flag.UPDATE_AUTO)) { on ->
+            Prefs.set(this, Flag.UPDATE_AUTO, on)
+        }.view)
+        upd.addView(Ui.separator(this))
+        upd.addView(Ui.navRow(this, t.updateCheck, "${t.version} ${appVersion()}", null) { manualUpdateCheck() })
+        root.addView(upd, Ui.lp(dp(8)))
+
         root.addView(Glass.label(this, "Private Lock · ${t.version} ${appVersion()}", 12f).apply {
             gravity = Gravity.CENTER
         }, Ui.lp(dp(28)))
@@ -148,6 +158,25 @@ class SettingsActivity : Activity() {
                 Ui.showBanner(frame, t.adminRemoved, 3500L)
                 frame.postDelayed({ refreshPermissions() }, 500L)
             })
+        }
+    }
+
+    private fun manualUpdateCheck() {
+        Updater.checkNow(this) { rel, failed ->
+            if (isFinishing) return@checkNow
+            when {
+                rel != null -> {
+                    val d = AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                        .setTitle(t.secUpdates)
+                        .setMessage(String.format(t.updateAvailable, rel.version))
+                        .setPositiveButton(t.updateInstall) { _, _ -> Updater.install(this, frame, rel) }
+                        .setNegativeButton(t.cancel, null)
+                        .show()
+                    LockSetup.glassy(this, d)
+                }
+                failed -> Ui.showBanner(frame, t.updateFailed, 3500L)
+                else -> Ui.showBanner(frame, t.updateNone)
+            }
         }
     }
 

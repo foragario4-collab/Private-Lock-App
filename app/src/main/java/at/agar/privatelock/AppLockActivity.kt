@@ -50,6 +50,37 @@ class AppLockActivity : Activity() {
             root.addView(warn, Ui.lp(dp(20)))
         }
 
+        // Status: alles, was für die Sperre nötig ist
+        root.addView(Ui.section(this, t.diagTitle), Ui.lp(dp(20)))
+        val diag = Ui.card(this, 2)
+        val ok = "✓"
+        val no = "✗"
+        val running = acc && AppLockService.instance != null
+        diag.addView(Ui.navRow(this, t.diagService, null, if (running) ok else no,
+            if (running) Glass.GREEN else Glass.ORANGE) { if (running) openAccessibility() else askAccessibility() })
+        diag.addView(Ui.separator(this))
+        val secure = AppLock.systemAvailable(this)
+        diag.addView(Ui.navRow(this, t.diagScreenLock, null, if (secure) ok else no,
+            if (secure) Glass.GREEN else Glass.ORANGE, onClick = null))
+        diag.addView(Ui.separator(this))
+        val bio = AppLock.biometricReady(this)
+        diag.addView(Ui.navRow(this, t.diagBiometric, null, when (bio) {
+            true -> ok
+            false -> no
+            null -> "?"
+        }, if (bio == true) Glass.GREEN else Glass.TEXT_SOFT, onClick = null))
+        diag.addView(Ui.separator(this))
+        diag.addView(Ui.navRow(this, t.methodTitle, null,
+            if (AppLock.usesPin(this)) t.methodPin else t.methodSystem, Glass.TEXT_SOFT, onClick = null))
+        AppLock.lastError?.let { err ->
+            diag.addView(Ui.separator(this))
+            diag.addView(Ui.navRow(this, "⚠️", err, null, onClick = null))
+        }
+        root.addView(diag, Ui.lp(dp(8)))
+        root.addView(Glass.button(this, t.testButton) {
+            LockSetup.ensure(this, onReady = { AppLock.showTest(this) })
+        }, Ui.lp(dp(12)))
+
         // Apps
         val n = AppLock.selected(this).size
         val apps = Ui.card(this, 2)

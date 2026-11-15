@@ -33,6 +33,7 @@ class MainActivity : Activity(), SensorEventListener {
     private lateinit var graph: SensorGraphView
     private lateinit var modeText: TextView
     private lateinit var appLockBox: LinearLayout
+    private lateinit var updateBox: LinearLayout
 
     private var sm: SensorManager? = null
     private lateinit var t: Strings
@@ -81,6 +82,10 @@ class MainActivity : Activity(), SensorEventListener {
         // Hinweis, falls die Sperr-Berechtigung fehlt
         warnBox = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         root.addView(warnBox, Ui.lp(0))
+
+        // Hinweis auf neue Version (erscheint nur, wenn es eine gibt)
+        updateBox = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        root.addView(updateBox, Ui.lp(0))
 
         // Großer Knopf
         orb = OrbView(this)
@@ -155,6 +160,7 @@ class MainActivity : Activity(), SensorEventListener {
         }
         if (AppLock.gateSelf(this)) return
         refreshAppLock()
+        Updater.autoCheck(this) { rel -> showUpdate(rel) }
         sm?.let { m ->
             m.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let { m.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
         }
@@ -248,6 +254,17 @@ class MainActivity : Activity(), SensorEventListener {
             ) { requestAdmin(REQ_ADMIN_ONLY) })
             warnBox.addView(card, Ui.lp(dp(16)))
         }
+    }
+
+    /** Karte "Neue Version verfügbar" */
+    private fun showUpdate(rel: Updater.Release) {
+        if (isFinishing) return
+        updateBox.removeAllViews()
+        val card = Ui.card(this, 2)
+        card.addView(Ui.navRow(
+            this, "⬆️  " + String.format(t.updateAvailable, rel.version), null, t.updateInstall, Glass.GREEN
+        ) { Updater.install(this, frame, rel) })
+        updateBox.addView(card, Ui.lp(dp(16)))
     }
 
     /** Karte "App-Sperre": Anzahl geschützter Apps + "Jetzt alle sperren" */

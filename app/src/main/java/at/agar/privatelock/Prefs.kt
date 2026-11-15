@@ -13,7 +13,8 @@ enum class Flag(val key: String, val def: Boolean) {
     BOOT("boot", true),
     AUTO_DRIVE("auto_drive", false),
     SCREEN_OFF("screen_off", false),
-    APPLOCK_THEFT("al_theft", true)
+    APPLOCK_THEFT("al_theft", true),
+    UPDATE_AUTO("upd_auto", true)
 }
 
 /** Alle Einstellungen an einer Stelle */

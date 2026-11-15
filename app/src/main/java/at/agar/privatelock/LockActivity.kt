@@ -35,6 +35,7 @@ class LockActivity : Activity() {
     private var autoPrompted = false  // Fingerabdruck-Abfrage schon automatisch gezeigt
     private var stopped = false
     private var triedFallback = false
+    private var test = false
     private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,6 +59,7 @@ class LockActivity : Activity() {
 
     private fun setup(i: Intent?) {
         pkg = i?.getStringExtra(EXTRA_PKG) ?: packageName
+        test = i?.getBooleanExtra(EXTRA_TEST, false) ?: false
         userLeft = false
         autoPrompted = false
         triedFallback = false
@@ -188,6 +190,9 @@ class LockActivity : Activity() {
 
                     override fun onAuthenticationError(errorCode: Int, errString: CharSequence?) {
                         inSystemAuth = false
+                        if (errorCode != BiometricPrompt.BIOMETRIC_ERROR_USER_CANCELED) {
+                            AppLock.lastError = "BiometricPrompt $errorCode: ${errString ?: ""}"
+                        }
                         if (done) return
                         if (stopped && !userLeft) {
                             coveredByApp()
@@ -205,8 +210,9 @@ class LockActivity : Activity() {
             } else {
                 legacyConfirm(km)
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             inSystemAuth = false
+            AppLock.lastError = "BiometricPrompt: " + e.javaClass.simpleName + " " + (e.message ?: "")
             fallbackConfirm(km)
         }
     }
@@ -218,8 +224,9 @@ class LockActivity : Activity() {
         try {
             inSystemAuth = true
             legacyConfirm(km)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             inSystemAuth = false
+            AppLock.lastError = "Confirm: " + e.javaClass.simpleName + " " + (e.message ?: "")
             Ui.showBanner(frame, t.noSecureLock)
         }
     }
@@ -253,7 +260,12 @@ class LockActivity : Activity() {
     private fun success() {
         if (done) return
         done = true
-        AppLock.markUnlocked(this, pkg)
+        if (test) {
+            AppLock.lastError = null
+            android.widget.Toast.makeText(this, "✓ " + t.testOk, android.widget.Toast.LENGTH_LONG).show()
+        } else {
+            AppLock.markUnlocked(this, pkg)
+        }
         AppLock.authFinish()
         finish()
         noAnimation()
@@ -322,6 +334,7 @@ class LockActivity : Activity() {
 
     companion object {
         const val EXTRA_PKG = "pkg"
+        const val EXTRA_TEST = "test"
         private const val REQ_CONFIRM = 31
         private const val MAX_TRIES = 5
         private const val LOCKOUT_MS = 30_000L

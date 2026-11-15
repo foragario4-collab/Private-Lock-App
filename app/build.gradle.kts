@@ -11,8 +11,8 @@ android {
         applicationId = "at.agar.privatelock"
         minSdk = 26
         targetSdk = 34
-        versionCode = 9
-        versionName = "1.8"
+        versionCode = 11
+        versionName = "2.0"
     }
 
     // Fester Schlüssel, damit neue Versionen einfach drüber installiert werden können

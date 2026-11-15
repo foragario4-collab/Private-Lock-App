@@ -187,6 +187,46 @@ object AppLock {
         AppLockService.instance?.recheck()
     }
 
+    // ---------------------------------------------------------------- Diagnose
+
+    /** Letzter Fehler der System-Abfrage (für die Status-Anzeige) */
+    @Volatile
+    var lastError: String? = null
+
+    /** Ist Fingerabdruck/Gesicht eingerichtet und nutzbar? null = unbekannt */
+    fun biometricReady(ctx: Context): Boolean? = try {
+        if (android.os.Build.VERSION.SDK_INT >= 30) {
+            val bm = ctx.getSystemService(android.hardware.biometrics.BiometricManager::class.java)
+            bm?.canAuthenticate(android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_WEAK) ==
+                    android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS
+        } else if (android.os.Build.VERSION.SDK_INT >= 29) {
+            biometricLegacy(ctx)
+        } else null
+    } catch (_: Exception) {
+        null
+    }
+
+    @Suppress("DEPRECATION")
+    private fun biometricLegacy(ctx: Context): Boolean? {
+        val bm = ctx.getSystemService(android.hardware.biometrics.BiometricManager::class.java) ?: return null
+        return bm.canAuthenticate() == android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS
+    }
+
+    /** Sperrbildschirm zum Ausprobieren öffnen (ändert nichts am Zustand) */
+    fun showTest(ctx: Context) {
+        authBegin()
+        try {
+            ctx.startActivity(
+                Intent(ctx, LockActivity::class.java)
+                    .putExtra(LockActivity.EXTRA_PKG, ctx.packageName)
+                    .putExtra(LockActivity.EXTRA_TEST, true)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            )
+        } catch (_: Exception) {
+            authFinish()
+        }
+    }
+
     // ---------------------------------------------------------------- Sperrbildschirm
 
     fun authBegin() {
