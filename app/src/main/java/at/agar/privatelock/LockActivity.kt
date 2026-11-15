@@ -50,6 +50,9 @@ class LockActivity : Activity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         AppLock.authBegin()
+        // Gleiche App, Sperrbildschirm ist schon sichtbar -> nichts neu starten (Abfrage läuft weiter)
+        val newPkg = intent?.getStringExtra(EXTRA_PKG) ?: packageName
+        if (newPkg == pkg && !done && !stopped) return
         cancel?.cancel()
         inSystemAuth = false
         done = false

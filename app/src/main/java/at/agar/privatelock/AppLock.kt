@@ -30,7 +30,6 @@ object AppLock {
 
     private const val MINUTE_MS = 60_000L
     private const val AUTH_TIMEOUT_MS = 120_000L
-    private const val AUTH_GRACE_MS = 1_500L
 
     private val unlocked = HashSet<String>()
     private val leftAt = HashMap<String, Long>()
@@ -244,11 +243,10 @@ object AppLock {
         authEnd = 0L
     }
 
+    /** Ist gerade ein Sperrbildschirm offen? (nur zum Ausblenden der Entsperr-Fenster des Systems) */
     fun authActive(): Boolean {
-        val now = SystemClock.elapsedRealtime()
-        if (authStart == 0L) return false
-        if (authEnd == 0L) return now - authStart < AUTH_TIMEOUT_MS
-        return now - authEnd < AUTH_GRACE_MS
+        if (authStart == 0L || authEnd != 0L) return false
+        return SystemClock.elapsedRealtime() - authStart < AUTH_TIMEOUT_MS
     }
 
     fun showLock(ctx: Context, pkg: String) {

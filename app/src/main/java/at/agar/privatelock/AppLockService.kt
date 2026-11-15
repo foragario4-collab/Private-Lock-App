@@ -50,8 +50,10 @@ class AppLockService : AccessibilityService() {
         if (e.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val pkg = e.packageName?.toString() ?: return
         if (pkg in ignore) return
-        if (AppLock.authActive()) return
+        // Unser eigener Sperrbildschirm
         if (pkg == packageName && e.className?.toString() == LockActivity::class.java.name) return
+        // Code-Eingabe des Systems, während unser Sperrbildschirm offen ist
+        if (pkg in AUTH_UI && AppLock.authActive()) return
 
         if (pkg != current) {
             current?.let { AppLock.onLeave(this, it) }
@@ -65,7 +67,7 @@ class AppLockService : AccessibilityService() {
     /** Nach "Jetzt sperren" oder dem Entsperren des Handys: die offene App sofort abdecken */
     fun recheck() {
         val c = current ?: return
-        if (c == packageName || AppLock.authActive()) return
+        if (c == packageName) return
         if (AppLock.needsLock(this, c)) AppLock.showLock(this, c)
     }
 
@@ -109,6 +111,9 @@ class AppLockService : AccessibilityService() {
     }
 
     companion object {
+        /** Fenster der System-Code-Abfrage (dürfen die geschützte App nicht "verlassen") */
+        private val AUTH_UI = setOf("com.android.settings", "com.google.android.settings")
+
         @Volatile
         var instance: AppLockService? = null
 
