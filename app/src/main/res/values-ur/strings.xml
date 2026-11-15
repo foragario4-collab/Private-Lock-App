@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">تاکہ Private Lock اچانک حرکت پر آپ کا فون فوراً لاک کر سکے۔</string>
+    <string name="acc_desc">ضروری ہے تاکہ Private Lock جانے کون سی ایپ کھلی ہے</string>
 </resources>

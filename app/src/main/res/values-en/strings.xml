@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">So Private Lock can lock your phone instantly on sudden movement.</string>
+    <string name="acc_desc">Needed so Private Lock can tell which app is opened</string>
 </resources>

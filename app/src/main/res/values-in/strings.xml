@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">Agar Private Lock bisa langsung mengunci ponselmu saat ada gerakan mendadak.</string>
+    <string name="acc_desc">Diperlukan agar Private Lock tahu aplikasi mana yang dibuka</string>
 </resources>

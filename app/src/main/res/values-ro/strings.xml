@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">Ca Private Lock să poată bloca imediat telefonul la o mișcare bruscă.</string>
+    <string name="acc_desc">Necesar ca Private Lock să știe ce aplicație se deschide</string>
 </resources>

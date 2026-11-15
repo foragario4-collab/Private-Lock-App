@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">Ili Private Lock iweze kufunga simu yako mara moja kukiwa na mwendo wa ghafla.</string>
+    <string name="acc_desc">Inahitajika ili Private Lock ijue ni programu gani imefunguliwa</string>
 </resources>

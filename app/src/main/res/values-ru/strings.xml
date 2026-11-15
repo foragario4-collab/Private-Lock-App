@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">Чтобы Private Lock мог мгновенно заблокировать телефон при резком движении.</string>
+    <string name="acc_desc">Нужно, чтобы Private Lock знал, какое приложение открыто</string>
 </resources>

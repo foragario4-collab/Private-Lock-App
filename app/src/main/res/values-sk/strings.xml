@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">Aby Private Lock mohol pri prudkom pohybe telefón okamžite zamknúť.</string>
+    <string name="acc_desc">Potrebné, aby Private Lock vedel, ktorá aplikácia je otvorená</string>
 </resources>

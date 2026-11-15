@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">ليتمكن Private Lock من قفل هاتفك فوراً عند حركة مفاجئة.</string>
+    <string name="acc_desc">ضروري ليعرف Private Lock أي تطبيق يُفتح</string>
 </resources>

@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">Để Private Lock có thể khóa điện thoại ngay khi có chuyển động đột ngột.</string>
+    <string name="acc_desc">Cần để Private Lock biết ứng dụng nào đang được mở</string>
 </resources>

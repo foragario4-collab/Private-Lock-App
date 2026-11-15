@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">Para o Private Lock poder bloquear o teu telemóvel de imediato num movimento brusco.</string>
+    <string name="acc_desc">Necessário para o Private Lock saber que app é aberta</string>
 </resources>

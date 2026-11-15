@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">Så att Private Lock kan låsa telefonen direkt vid en plötslig rörelse.</string>
+    <string name="acc_desc">Behövs för att Private Lock ska veta vilken app som öppnas</string>
 </resources>

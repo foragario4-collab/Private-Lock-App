@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">Private Lock, ani bir harekette telefonunu hemen kilitleyebilsin diye.</string>
+    <string name="acc_desc">Private Lock’un hangi uygulamanın açıldığını anlaması için gerekli</string>
 </resources>

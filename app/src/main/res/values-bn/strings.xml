@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">যাতে Private Lock হঠাৎ নড়াচড়ায় আপনার ফোন সঙ্গে সঙ্গে লক করতে পারে।</string>
+    <string name="acc_desc">দরকার যাতে Private Lock বোঝে কোন অ্যাপ খোলা হয়েছে</string>
 </resources>

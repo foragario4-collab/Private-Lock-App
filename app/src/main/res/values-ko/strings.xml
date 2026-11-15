@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">갑작스러운 움직임이 있을 때 Private Lock이 휴대폰을 바로 잠글 수 있도록.</string>
+    <string name="acc_desc">Private Lock이 어떤 앱이 열렸는지 알기 위해 필요해요</string>
 </resources>

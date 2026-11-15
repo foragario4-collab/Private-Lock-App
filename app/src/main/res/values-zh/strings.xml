@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">以便 Private Lock 在突然移动时立即锁定你的手机。</string>
+    <string name="acc_desc">让 Private Lock 知道打开了哪个应用所必需</string>
 </resources>

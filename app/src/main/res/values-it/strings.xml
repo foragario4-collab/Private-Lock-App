@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">Così Private Lock può bloccare subito il tuo telefono in caso di movimento improvviso.</string>
+    <string name="acc_desc">Necessaria perché Private Lock sappia quale app viene aperta</string>
 </resources>

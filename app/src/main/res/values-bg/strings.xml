@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">За да може Private Lock веднага да заключи телефона при рязко движение.</string>
+    <string name="acc_desc">Нужно, за да знае Private Lock кое приложение е отворено</string>
 </resources>

@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">急な動きがあったとき Private Lock がすぐにスマホをロックできるようにするため。</string>
+    <string name="acc_desc">どのアプリが開かれたかを Private Lock が知るために必要</string>
 </resources>

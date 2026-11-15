@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">Private Lock-на сиха меттахъхьадар хилча телефон дӀакъовла йиш хилийта.</string>
+    <string name="acc_desc">Private Lock-на хӀун программа схьайиллина хаа оьшу</string>
 </resources>

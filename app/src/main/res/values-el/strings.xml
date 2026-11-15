@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">Ώστε το Private Lock να μπορεί να κλειδώνει αμέσως το κινητό σε απότομη κίνηση.</string>
+    <string name="acc_desc">Χρειάζεται για να ξέρει το Private Lock ποια εφαρμογή ανοίγει</string>
 </resources>

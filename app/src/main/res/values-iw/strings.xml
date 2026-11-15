@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">כדי ש־Private Lock יוכל לנעול את הטלפון מיד בתנועה פתאומית.</string>
+    <string name="acc_desc">נדרש כדי ש־Private Lock ידע איזו אפליקציה נפתחה</string>
 </resources>

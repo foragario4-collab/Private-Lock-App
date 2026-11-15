@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">Pour que Private Lock puisse verrouiller ton téléphone instantanément en cas de mouvement brusque.</string>
+    <string name="acc_desc">Nécessaire pour que Private Lock sache quelle app est ouverte</string>
 </resources>

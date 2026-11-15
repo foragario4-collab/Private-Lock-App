@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">Hogy a Private Lock hirtelen mozgásnál azonnal zárolhassa a telefonodat.</string>
+    <string name="acc_desc">Szükséges, hogy a Private Lock tudja, melyik alkalmazás nyílt meg</string>
 </resources>

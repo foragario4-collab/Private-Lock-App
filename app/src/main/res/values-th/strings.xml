@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">เพื่อให้ Private Lock ล็อกโทรศัพท์ของคุณได้ทันทีเมื่อมีการเคลื่อนไหวกะทันหัน</string>
+    <string name="acc_desc">จำเป็นเพื่อให้ Private Lock รู้ว่าเปิดแอปใดอยู่</string>
 </resources>

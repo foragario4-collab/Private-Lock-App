@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Private Lock</string>
     <string name="admin_desc">ताकि Private Lock अचानक हलचल पर आपका फ़ोन तुरंत लॉक कर सके।</string>
+    <string name="acc_desc">ज़रूरी है ताकि Private Lock जाने कौन-सा ऐप खुला है</string>
 </resources>
