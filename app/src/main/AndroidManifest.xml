@@ -9,6 +9,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Fingerabdruck / Gesicht / Handy-Code für die App-Sperre -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
 
     <!-- Liste der Apps für die App-Sperre -->
     <queries>
@@ -55,7 +58,7 @@
             android:exported="false"
             android:launchMode="singleTask"
             android:taskAffinity="at.agar.privatelock.applock"
-            android:windowSoftInputMode="adjustResize|stateVisible" />
+            android:windowSoftInputMode="stateAlwaysHidden" />
 
         <!-- Bedienungshilfe: erkennt, welche App geöffnet wird -->
         <service

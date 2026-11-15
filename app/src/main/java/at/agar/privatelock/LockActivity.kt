@@ -34,6 +34,7 @@ class LockActivity : Activity() {
     private var userLeft = false      // Home/Übersicht gedrückt
     private var autoPrompted = false  // Fingerabdruck-Abfrage schon automatisch gezeigt
     private var stopped = false
+    private var triedFallback = false
     private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,6 +60,7 @@ class LockActivity : Activity() {
         pkg = i?.getStringExtra(EXTRA_PKG) ?: packageName
         userLeft = false
         autoPrompted = false
+        triedFallback = false
         if (!AppLock.canAuthenticate(this)) {
             // Keine Möglichkeit zu entsperren (keine Displaysperre, keine PIN) -> nicht aussperren
             success()
@@ -104,13 +106,15 @@ class LockActivity : Activity() {
         frame = s.frame
         val root = s.root
         root.gravity = Gravity.CENTER_HORIZONTAL
-        root.setPadding(dp(24), dp(110), dp(24), dp(48))
+        val pinMode = AppLock.usesPin(this)
+        root.setPadding(dp(24), if (pinMode) dp(64) else dp(110), dp(24), dp(40))
 
         val icon = ImageView(this).apply {
             setImageDrawable(appIcon())
             scaleType = ImageView.ScaleType.FIT_CENTER
         }
-        root.addView(icon, LinearLayout.LayoutParams(dp(84), dp(84)))
+        val iconSize = if (pinMode) dp(64) else dp(84)
+        root.addView(icon, LinearLayout.LayoutParams(iconSize, iconSize))
         root.addView(Glass.label(this, appLabel(), 26f, Glass.TEXT, bold = true).apply {
             gravity = Gravity.CENTER
         }, LinearLayout.LayoutParams(
@@ -129,47 +133,24 @@ class LockActivity : Activity() {
     }
 
     private fun buildPin(root: LinearLayout) {
-        val input = Glass.input(this, t.enterPin, true).apply {
-            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_PASSWORD
-            gravity = Gravity.CENTER
-            textSize = 24f
-            letterSpacing = 0.3f
-            imeOptions = EditorInfo.IME_ACTION_DONE
-        }
-        val error = Glass.label(this, "", 14f, Glass.RED).apply { gravity = Gravity.CENTER }
-        val check: () -> Unit = {
+        lateinit var pad: PinPad
+        pad = PinPad(this, AppLock.pinLength(this)) { pin ->
             val wait = lockoutLeft()
             if (wait <= 0 && failed >= MAX_TRIES) failed = 0
             if (wait > 0) {
-                error.text = t.tooManyTries
-            } else if (AppLock.checkPin(this, input.text.toString())) {
+                pad.fail(t.tooManyTries)
+            } else if (AppLock.checkPin(this, pin)) {
                 failed = 0
                 success()
             } else {
                 failed++
                 if (failed >= MAX_TRIES) lockoutUntil = SystemClock.elapsedRealtime() + LOCKOUT_MS
-                input.setText("")
-                error.text = if (failed >= MAX_TRIES) t.tooManyTries else t.wrongPin
                 Feedback.vibrate(this, 120)
-                input.animate().translationX(dp(10).toFloat()).setDuration(50).withEndAction {
-                    input.animate().translationX(-dp(10).toFloat()).setDuration(50).withEndAction {
-                        input.animate().translationX(0f).setDuration(50).start()
-                    }.start()
-                }.start()
+                pad.fail(if (failed >= MAX_TRIES) t.tooManyTries else t.wrongPin)
             }
         }
-        input.setOnEditorActionListener { _, actionId, ev ->
-            if (actionId == EditorInfo.IME_ACTION_DONE ||
-                (ev != null && ev.keyCode == KeyEvent.KEYCODE_ENTER && ev.action == KeyEvent.ACTION_DOWN)
-            ) {
-                check()
-                true
-            } else false
-        }
-        root.addView(input, Ui.lp(dp(36)))
-        root.addView(error, Ui.lp(dp(8)))
-        root.addView(Glass.button(this, t.unlock, primary = true) { check() }, Ui.lp(dp(14)))
-        input.requestFocus()
+        pad.title.text = t.enterPin
+        root.addView(pad, Ui.lp(dp(26)))
     }
 
     private fun lockoutLeft(): Long = lockoutUntil - SystemClock.elapsedRealtime()
@@ -215,16 +196,28 @@ class LockActivity : Activity() {
                             done = true
                             AppLock.authFinish()
                             finish()
-                        } else if (errorCode != BiometricPrompt.BIOMETRIC_ERROR_USER_CANCELED &&
-                            errorCode != BiometricPrompt.BIOMETRIC_ERROR_CANCELED
-                        ) {
-                            Ui.showBanner(frame, errString?.toString() ?: t.noSecureLock)
+                        } else if (errorCode != BiometricPrompt.BIOMETRIC_ERROR_USER_CANCELED) {
+                            // Abfrage ließ sich nicht starten -> normale Code-Abfrage des Handys
+                            fallbackConfirm(km)
                         }
                     }
                 })
             } else {
                 legacyConfirm(km)
             }
+        } catch (_: Exception) {
+            inSystemAuth = false
+            fallbackConfirm(km)
+        }
+    }
+
+    /** Notfall-Weg: die gewohnte Entsperr-Seite des Handys (PIN/Muster, je nach Handy auch Fingerabdruck) */
+    private fun fallbackConfirm(km: KeyguardManager) {
+        if (triedFallback || done) return
+        triedFallback = true
+        try {
+            inSystemAuth = true
+            legacyConfirm(km)
         } catch (_: Exception) {
             inSystemAuth = false
             Ui.showBanner(frame, t.noSecureLock)

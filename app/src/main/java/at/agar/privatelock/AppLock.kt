@@ -81,12 +81,15 @@ object AppLock {
 
     // ---------------------------------------------------------------- PIN
 
+    /** Länge der PIN (für automatisches Prüfen im Ziffernfeld), 0 = unbekannt */
+    fun pinLength(ctx: Context): Int = p(ctx).getInt("al_pin_len", 0)
+
     fun hasPin(ctx: Context): Boolean = p(ctx).getString("al_pin", null) != null
 
     fun setPin(ctx: Context, pin: String) {
         val salt = ByteArray(16)
         SecureRandom().nextBytes(salt)
-        p(ctx).edit().putString("al_pin", hex(salt) + ":" + hash(salt, pin)).apply()
+        p(ctx).edit().putString("al_pin", hex(salt) + ":" + hash(salt, pin)).putInt("al_pin_len", pin.length).apply()
     }
 
     fun checkPin(ctx: Context, pin: String): Boolean {

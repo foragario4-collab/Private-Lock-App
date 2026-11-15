@@ -44,42 +44,47 @@ object LockSetup {
         glassy(a, b.show())
     }
 
-    /** Dialog: eigene PIN zweimal eingeben */
+    /** Dialog: eigene PIN zweimal eingeben – mit eigenem Ziffernfeld statt Handy-Tastatur */
     fun askPin(a: Activity, onSaved: () -> Unit, onCancel: () -> Unit = {}) {
         val t = L.of(a)
-        val box = LinearLayout(a).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(a.dp(22), a.dp(8), a.dp(22), a.dp(4))
+        var first: String? = null
+        lateinit var d: AlertDialog
+        lateinit var pad: PinPad
+        pad = PinPad(a, 0) { pin ->
+            val f = first
+            if (f == null) {
+                // Schritt 1: neue PIN
+                if (pin.length !in 4..PinPad.MAX) {
+                    pad.fail(t.pinTooShort)
+                } else {
+                    first = pin
+                    pad.autoLength = pin.length
+                    pad.clear()
+                    pad.title.text = t.confirmPin
+                }
+            } else {
+                // Schritt 2: wiederholen
+                if (pin == f) {
+                    AppLock.setPin(a, pin)
+                    d.dismiss()
+                    onSaved()
+                } else {
+                    first = null
+                    pad.autoLength = 0
+                    pad.fail(t.pinMismatch)
+                    pad.title.text = t.newPin
+                }
+            }
         }
-        fun pinField(hint: String) = Glass.input(a, hint, true).apply {
-            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_PASSWORD
-            gravity = Gravity.CENTER
-        }
-        val p1Field = pinField(t.newPin)
-        val p2Field = pinField(t.confirmPin)
-        box.addView(p1Field)
-        box.addView(p2Field, Ui.lp(a.dp(10)))
-        val d = AlertDialog.Builder(a, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+        pad.title.text = t.newPin
+        pad.setPadding(a.dp(8), a.dp(16), a.dp(8), a.dp(8))
+        d = AlertDialog.Builder(a, android.R.style.Theme_DeviceDefault_Dialog_Alert)
             .setTitle(t.pinTitle)
-            .setView(box)
+            .setView(pad)
             .setCancelable(false)
-            .setPositiveButton(t.save, null)
             .setNegativeButton(t.cancel) { _, _ -> onCancel() }
             .show()
         glassy(a, d)
-        d.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener {
-            val p1 = p1Field.text.toString()
-            val p2 = p2Field.text.toString()
-            if (p1.length !in 4..8 || !p1.all { c -> c.isDigit() }) {
-                p2Field.error = t.pinTooShort
-            } else if (p1 != p2) {
-                p2Field.error = t.pinMismatch
-            } else {
-                AppLock.setPin(a, p1)
-                d.dismiss()
-                onSaved()
-            }
-        }
     }
 
     fun glassy(a: Activity, d: AlertDialog) {
