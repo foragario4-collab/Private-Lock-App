@@ -48,6 +48,9 @@ class LockService : Service(), SensorEventListener {
     private var pendingLock: Runnable? = null
     private var lastCheck = 0L
 
+    // Kurz nach dem Ausschalten des Displays (Handy wird eingesteckt) nichts auslösen
+    private var quietUntil = 0L
+
     private val stopAlarmRunnable = Runnable { stopAlarm() }
 
     private val prefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> applyPrefs() }
@@ -55,7 +58,11 @@ class LockService : Service(), SensorEventListener {
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(c: Context, i: Intent) {
             if (i.action == Intent.ACTION_USER_PRESENT) stopAlarm()
-            if (i.action == Intent.ACTION_SCREEN_OFF) AppLock.onScreenOff()
+            if (i.action == Intent.ACTION_SCREEN_OFF) {
+                AppLock.onScreenOff()
+                quietUntil = SystemClock.elapsedRealtime() + SETTLE_MS
+                detector.reset()
+            }
             updateListening()
         }
     }
@@ -126,7 +133,7 @@ class LockService : Service(), SensorEventListener {
 
     private fun applyPrefs() {
         createChannels(this) // Kanal-Namen in der aktuellen Sprache
-        detector.threshold = Prefs.threshold(this)
+        detector.threshold = currentThreshold()
         detector.smart = Prefs.on(this, Flag.SMART)
         detector.fall = Prefs.on(this, Flag.FALL)
         updateNotification()
@@ -135,15 +142,29 @@ class LockService : Service(), SensorEventListener {
 
     // ---------------------------------------------------------------- Sensor an/aus
 
-    /** Nur überwachen, wenn das Handy entsperrt benutzt wird – oder (Option) auch bei aus­geschaltetem Display */
-    private fun shouldListen(): Boolean {
+    /** Wird das Handy gerade entsperrt benutzt? (Display an, kein Sperrbildschirm) */
+    private fun inUse(): Boolean {
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
         val km = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-        if (pm.isInteractive && !km.isKeyguardLocked) return true
-        return Prefs.on(this, Flag.SCREEN_OFF) && !km.isDeviceLocked
+        return pm.isInteractive && !km.isKeyguardLocked
+    }
+
+    /**
+     * Überwachen, wenn das Handy entsperrt benutzt wird – mit der Option „Auch bei ausgeschaltetem Display“
+     * zusätzlich die ganze Zeit, in der das Display dunkel ist oder der Sperrbildschirm zu sehen ist
+     * (egal ob das Handy schon gesperrt ist).
+     */
+    private fun shouldListen(): Boolean = inUse() || Prefs.on(this, Flag.SCREEN_OFF)
+
+    /** Bei dunklem/gesperrtem Display steckt das Handy meist in der Tasche: mindestens so unempfindlich wie „Tasche“ */
+    private fun currentThreshold(): Float {
+        val base = Prefs.threshold(this)
+        if (inUse()) return base
+        return maxOf(base, Detector.threshold(Prefs.sens(this), Prefs.MODE_BAG))
     }
 
     private fun updateListening() {
+        detector.threshold = currentThreshold()
         val want = shouldListen()
         if (want && !listening) startListening()
         if (!want && listening) stopListening()
@@ -193,7 +214,11 @@ class LockService : Service(), SensorEventListener {
     // ---------------------------------------------------------------- Sperren
 
     private fun onTrigger(reason: Detector.Reason) {
-        if (SystemClock.elapsedRealtime() < pausedUntil) return // Test in der App läuft
+        val now = SystemClock.elapsedRealtime()
+        if (now < pausedUntil) return // Test in der App läuft
+        if (now < quietUntil && !inUse()) return // Display gerade ausgeschaltet, Handy wird eingesteckt
+        // In der Tasche (Display dunkel) sind kurze „Fall“-Momente beim Laufen/Springen normal
+        if (reason == Detector.Reason.FALL && !inUse()) return
         if (pendingLock != null) return
         val r = Runnable {
             pendingLock = null
@@ -207,7 +232,10 @@ class LockService : Service(), SensorEventListener {
         val s = L.of(this)
         // Ausgewählte Apps bleiben gesperrt, bis man sie einzeln entsperrt
         if (Prefs.on(this, Flag.APPLOCK_THEFT) && AppLock.selected(this).isNotEmpty()) AppLock.lockAll(this)
-        if (!Admin.lockNow(this)) {
+        val km = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        val alreadyLocked = km.isDeviceLocked
+        // Ist das Handy schon gesperrt, braucht es kein Sperren mehr – Alarm & App-Sperre laufen trotzdem
+        if (!alreadyLocked && !Admin.lockNow(this)) {
             notifyEvent(s.lockFailTitle, s.lockFailText)
             return
         }
@@ -342,6 +370,7 @@ class LockService : Service(), SensorEventListener {
         private const val ID_EVENT = 2
         const val ACTION_STOP = "at.agar.privatelock.STOP"
         const val ACTION_LOCK_APPS = "at.agar.privatelock.LOCK_APPS"
+        private const val SETTLE_MS = 2_500L
 
         @Volatile
         var running = false
